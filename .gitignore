@@ -1,3 +1,7 @@
 .idea
 resources/app/vendor
 output
+
+build/bin
+node_modules
+frontend/dist

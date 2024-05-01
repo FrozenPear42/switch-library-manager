@@ -1,11 +1,13 @@
 # Switch library manager
-Easily manage your switch game backups
+Easily manage your switch game backups.
 
-![Image description](https://raw.githubusercontent.com/giwty/nsp-update/master/updates_ui.png)
+Fork of [Switch Library /manager](https://github.com/giwty/switch-library-manager) by @giwty with updated UI and implemented NUT server.
 
-![Image description](https://raw.githubusercontent.com/giwty/nsp-update/master/dlc_ui.png)
+![Image description](https://raw.githubusercontent.com/FrozenPear42/switch-library-manager/master/images/updates_ui.png)
+
+![Image description](https://raw.githubusercontent.com/FrozenPear42/switch-library-manager/master/images/dlc_ui.png)
  
-![Image description](https://raw.githubusercontent.com/giwty/nsp-update/master/cmd.png)
+![Image description](https://raw.githubusercontent.com/FrozenPear42/switch-library-manager/master/images/cmd.png)
 
 #### Features:
 - Cross platform, works on Windows / Mac / Linux
