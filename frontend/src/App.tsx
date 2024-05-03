@@ -1,28 +1,24 @@
-import {useState} from 'react';
-import logo from './assets/images/logo-universal.png';
-import './App.css';
-import {Greet} from "../wailsjs/go/main/App";
+import styles from "./App.module.css";
+import Footer from "./components/Footer/Footer";
+import Header from "./components/Header/Header";
+import Menu from "./components/Menu/Menu";
+import Library from "./pages/Library/Library";
 
-function App() {
-    const [resultText, setResultText] = useState("Please enter your name below 👇");
-    const [name, setName] = useState('');
-    const updateName = (e: any) => setName(e.target.value);
-    const updateResultText = (result: string) => setResultText(result);
-
-    function greet() {
-        Greet(name).then(updateResultText);
-    }
-
-    return (
-        <div id="App">
-            <img src={logo} id="logo" alt="logo"/>
-            <div id="result" className="result">{resultText}</div>
-            <div id="input" className="input-box">
-                <input id="name" className="input" onChange={updateName} autoComplete="off" name="input" type="text"/>
-                <button className="btn" onClick={greet}>Greet</button>
-            </div>
-        </div>
-    )
+export default function App() {
+  return (
+    <div className={styles.app}>
+      <div className={styles.header}>
+        <Header></Header>
+      </div>
+      <div className={styles.menu}>
+        <Menu></Menu>
+      </div>
+      <div className={styles.content}>
+        <Library></Library>
+      </div>
+      <div className={styles.footer}>
+        <Footer></Footer>
+      </div>
+    </div>
+  );
 }
-
-export default App

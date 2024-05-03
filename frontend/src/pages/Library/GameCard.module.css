@@ -1,0 +1,29 @@
+.card {
+  border: 1px solid white;
+  border-radius: 0.5rem;
+  background: #101010;
+  padding: 0.5rem;
+  display: flex;
+  gap: 0.25rem 1rem;
+  flex-wrap: wrap;
+}
+
+.image {
+  grid-area: image;
+  border-radius: 0.5rem;
+  border: 1px solid #ffffff80;
+}
+
+.details {
+  display: grid;
+  align-content: start;
+  gap: 0.25rem;
+}
+
+.title {
+  font-weight: bold;
+}
+
+.additionalInfo {
+  opacity: 0.75;
+}

@@ -3,10 +3,8 @@ package settings
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mcuadros/go-version"
 	"go.uber.org/zap"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
 )
@@ -126,32 +124,51 @@ func SaveSettings(settings *AppSettings, baseFolder string) *AppSettings {
 	return settings
 }
 
-func CheckForUpdates() (bool, error) {
+func CheckForUpdates() (string, bool, error) {
+	//
+	//localVer := SLM_VERSION
+	//
+	//res, err := http.Get(SLM_VERSION_URL)
+	//if err != nil {
+	//	return false, err
+	//}
+	//defer res.Body.Close()
+	//
+	//body, err := ioutil.ReadAll(res.Body)
+	//if err != nil {
+	//	return false, err
+	//}
+	//
+	//remoteValues := map[string]string{}
+	//err = json.Unmarshal(body, &remoteValues)
+	//if err != nil {
+	//	return false, err
+	//}
+	//
+	//remoteVer := remoteValues["version"]
+	//
+	//if version.CompareSimple(remoteVer, localVer) > 0 {
+	//	return true, nil
+	//}
+	//
+	//return false, nil
+	return SoftwareVersion, false, nil
+}
 
-	localVer := SLM_VERSION
+//func ReloadSettings() error {
+//	viper.SetDefault("prodKeysPath", "./prod.keys")
+//	viper.SetDefault("dataPath", "./")
+//	viper.SetDefault("ignore.dlcIds", []string{})
+//	viper.SetDefault("localDB.titlesEtag", "https://tinfoil.media/repo/db/titles.json")
+//	viper.SetDefault("switchDB.titlesEtag", "https://tinfoil.media/repo/db/titles.json")
+//	viper.SetDefault("switchDB.titlesUrl", "https://tinfoil.media/repo/db/titles.json")
+//	viper.SetDefault("switchDB.versionsEtag", "https://tinfoil.media/repo/db/titles.json")
+//	viper.SetDefault("switchDB.versionsUrl", "https://tinfoil.media/repo/db/versions.json")
+//	viper.SetDefault("update.url", "https://raw.githubusercontent.com/giwty/switch-library-manager/master/slm.json")
+//}
+//
+//func GetSettings() *AppSettings {}
 
-	res, err := http.Get(SLM_VERSION_URL)
-	if err != nil {
-		return false, err
-	}
-	defer res.Body.Close()
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return false, err
-	}
-
-	remoteValues := map[string]string{}
-	err = json.Unmarshal(body, &remoteValues)
-	if err != nil {
-		return false, err
-	}
-
-	remoteVer := remoteValues["version"]
-
-	if version.CompareSimple(remoteVer, localVer) > 0 {
-		return true, nil
-	}
-
-	return false, nil
+func CurrentSettings() AppSettings {
+	return *settingsInstance
 }

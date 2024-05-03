@@ -1,5 +1,5 @@
 .idea
-resources/app/vendor
+old/resources/app/vendor
 output
 
 build/bin
