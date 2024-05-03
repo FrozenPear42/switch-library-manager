@@ -78,6 +78,7 @@ func createLogger(workingFolder string, debug bool) *zap.Logger {
 
 	// TODO: swap to zapcore and force file
 	//f, err := os.OpenFile(logPath, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
+	_ = logPath
 
 	var config zap.Config
 	if debug {
@@ -87,8 +88,8 @@ func createLogger(workingFolder string, debug bool) *zap.Logger {
 		config.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
 	}
 
-	config.OutputPaths = []string{"stdout", logPath}
-	config.ErrorOutputPaths = []string{"stderr", logPath}
+	config.OutputPaths = []string{"stdout"}
+	config.ErrorOutputPaths = []string{"stderr"}
 	logger, err := config.Build()
 	if err != nil {
 		fmt.Printf("failed to create logger - %v", err)

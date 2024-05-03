@@ -1,0 +1,23 @@
+{
+ "versions_etag": "W/\"2ef50d1cb6bd61:0\"",
+ "titles_etag": "W/\"a5b02845cf6bd61:0\"",
+ "prod_keys": "D:\\Projects\\switch-library-manager\\prod.keys",
+ "folder": "",
+ "scan_folders": [],
+ "gui": true,
+ "debug": false,
+ "check_for_missing_updates": true,
+ "check_for_missing_dlc": true,
+ "organize_options": {
+  "create_folder_per_game": false,
+  "rename_files": false,
+  "delete_empty_folders": false,
+  "delete_old_update_files": false,
+  "folder_name_template": "{TITLE_NAME}",
+  "switch_safe_file_names": true,
+  "file_name_template": "{TITLE_NAME} ({DLC_NAME})[{TITLE_ID}][v{VERSION}]"
+ },
+ "scan_recursively": true,
+ "gui_page_size": 100,
+ "ignore_dlc_title_ids": []
+}
