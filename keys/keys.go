@@ -1,4 +1,4 @@
-package settings
+package keys
 
 import (
 	"fmt"
@@ -11,6 +11,12 @@ type KeysProvider interface {
 
 type KeysProviderImpl struct {
 	keys map[string]string
+}
+
+func NewKeyProvider() *KeysProviderImpl {
+	return &KeysProviderImpl{
+		keys: make(map[string]string),
+	}
 }
 
 func (p *KeysProviderImpl) LoadFromFile(paths []string) error {

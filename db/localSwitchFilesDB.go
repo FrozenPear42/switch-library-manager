@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/FrozenPear42/switch-library-manager/fileio"
+	"github.com/FrozenPear42/switch-library-manager/keys"
 	"github.com/FrozenPear42/switch-library-manager/switchfs"
 	"go.uber.org/zap"
 	"os"
@@ -30,7 +31,8 @@ const (
 )
 
 type LocalSwitchDBManager struct {
-	db *PersistentDB
+	db          *PersistentDB
+	keyProvider keys.KeysProvider
 }
 
 func NewLocalSwitchDBManager(baseFolder string) (*LocalSwitchDBManager, error) {
@@ -282,10 +284,9 @@ func (ldb *LocalSwitchDBManager) getGameMetadata(file ExtendedFileInfo,
 	skipped map[ExtendedFileInfo]SkippedFile) (map[string]*switchfs.ContentMetaAttributes, error) {
 
 	var metadata map[string]*switchfs.ContentMetaAttributes = nil
-	keys, _ := keys.SwitchKeys()
 	var err error
 	fileKey := filePath + "|" + file.FileName + "|" + strconv.Itoa(int(file.Size))
-	if keys != nil && keys.GetKey("header_key") != "" {
+	if _, ok := ldb.keyProvider.GetProdKey("header_key"); ok {
 		err = ldb.db.GetEntry(DB_TABLE_FILE_SCAN_METADATA, fileKey, &metadata)
 
 		if err != nil {
@@ -299,14 +300,14 @@ func (ldb *LocalSwitchDBManager) getGameMetadata(file ExtendedFileInfo,
 		fileName := strings.ToLower(file.FileName)
 		if strings.HasSuffix(fileName, "nsp") ||
 			strings.HasSuffix(fileName, "nsz") {
-			metadata, err = switchfs.ReadNspMetadata(filePath)
+			metadata, err = switchfs.ReadNspMetadata(ldb.keyProvider, filePath)
 			if err != nil {
 				skipped[file] = SkippedFile{ReasonCode: REASON_MALFORMED_FILE, ReasonText: fmt.Sprintf("failed to read NSP [reason: %v]", err)}
 				zap.S().Errorf("[file:%v] failed to read NSP [reason: %v]\n", file.FileName, err)
 			}
 		} else if strings.HasSuffix(fileName, "xci") ||
 			strings.HasSuffix(fileName, "xcz") {
-			metadata, err = switchfs.ReadXciMetadata(filePath)
+			metadata, err = switchfs.ReadXciMetadata(ldb.keyProvider, filePath)
 			if err != nil {
 				skipped[file] = SkippedFile{ReasonCode: REASON_MALFORMED_FILE, ReasonText: fmt.Sprintf("failed to read NSP [reason: %v]", err)}
 				zap.S().Errorf("[file:%v] failed to read file [reason: %v]\n", file.FileName, err)

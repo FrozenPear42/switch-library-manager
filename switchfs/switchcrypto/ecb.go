@@ -1,10 +1,10 @@
-package _crypto
+package switchcrypto
 
 import "crypto/aes"
 
 func DecryptAes128Ecb(data, key []byte) []byte {
 
-	cipher, _ := aes.NewCipher([]byte(key))
+	cipher, _ := aes.NewCipher(key)
 	decrypted := make([]byte, len(data))
 	size := 16
 

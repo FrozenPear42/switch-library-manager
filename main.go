@@ -5,12 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/FrozenPear42/switch-library-manager/db"
+	"github.com/FrozenPear42/switch-library-manager/keys"
 	"github.com/FrozenPear42/switch-library-manager/settings"
+	"github.com/FrozenPear42/switch-library-manager/utils"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"go.uber.org/zap"
-	"os"
 	"path/filepath"
 )
 
@@ -18,12 +19,7 @@ import (
 var assets embed.FS
 
 func main() {
-	exePath, err := os.Executable()
-	if err != nil {
-		fmt.Println("Failed to get executable directory, please ensure app has sufficient permissions. Aborting.")
-		return
-	}
-	workingDirectory, err := os.Getwd()
+	workingDirectory, err := utils.GetExecDir()
 	if err != nil {
 		fmt.Println("Failed to get working directory. Aborting.")
 		return
@@ -31,7 +27,7 @@ func main() {
 
 	configurationProvider, err := settings.NewConfigurationProvider(filepath.Join(workingDirectory, "settings.yaml"))
 	if err != nil {
-		fmt.Println("Failed to initialize config provider. Aborting.")
+		fmt.Printf("Failed to initialize config provider. Aborting. Reason: %v\n", err)
 		return
 	}
 
@@ -57,7 +53,6 @@ func main() {
 	sugar := logger.Sugar()
 
 	sugar.Info("[SLM starts]")
-	sugar.Infof("[Executable: %v]", exePath)
 	sugar.Infof("[Working directory: %v]", workingDirectory)
 
 	localDbManager, err := db.NewLocalSwitchDBManager(workingDirectory)
@@ -66,7 +61,14 @@ func main() {
 		return
 	}
 
-	_, err = keys.InitSwitchKeys(workingDirectory)
+	keyProvider := keys.NewKeyProvider()
+	keyPaths := []string{
+		config.ProdKeysPath,
+		filepath.Join(workingDirectory, "prod.keys"),
+		"${HOME}/.switch/prod.keys",
+	}
+
+	err = keyProvider.LoadFromFile(keyPaths)
 	if err != nil {
 		sugar.Error("Failed to initialize keys\n", err)
 		return

@@ -2,27 +2,30 @@ package fileio
 
 import (
 	"errors"
+	"fmt"
 	"github.com/FrozenPear42/switch-library-manager/switchfs"
 	"os"
 )
 
 func ReadSplitFileMetadata(filePath string) (map[string]*switchfs.ContentMetaAttributes, error) {
-	//check if this is a NS* or XC* file
-	_, err := switchfs.ReadPfs0File(filePath)
-	isXCI := false
-	if err != nil {
-		_, err = readXciHeader(filePath)
-		if err != nil {
-			return nil, errors.New("split file is not an XCI/XCZ or NSP/NSZ")
-		}
-		isXCI = true
-	}
+	////check if this is a NS* or XC* file
+	//_, err := switchfs.ReadPfs0File(filePath)
+	//isXCI := false
+	//if err != nil {
+	//	_, err = readXciHeader(filePath)
+	//	if err != nil {
+	//		return nil, errors.New("split file is not an XCI/XCZ or NSP/NSZ")
+	//	}
+	//	isXCI = true
+	//}
+	//
+	//if isXCI {
+	//	return switchfs.ReadXciMetadata(filePath)
+	//} else {
+	//	return switchfs.ReadNspMetadata(filePath)
+	//}
 
-	if isXCI {
-		return switchfs.ReadXciMetadata(filePath)
-	} else {
-		return switchfs.ReadNspMetadata(filePath)
-	}
+	return nil, fmt.Errorf("")
 }
 
 func readXciHeader(filePath string) ([]byte, error) {

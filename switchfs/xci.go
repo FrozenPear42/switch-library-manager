@@ -4,17 +4,17 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"github.com/FrozenPear42/switch-library-manager/keys"
 	"go.uber.org/zap"
 	"io"
 	"strings"
 )
 
-func ReadXciMetadata(filePath string) (map[string]*ContentMetaAttributes, error) {
+func ReadXciMetadata(keyProvider keys.KeysProvider, filePath string) (map[string]*ContentMetaAttributes, error) {
 	file, err := OpenFile(filePath)
 	if err != nil {
 		return nil, err
 	}
-
 	defer file.Close()
 
 	header := make([]byte, 0x200)
@@ -47,7 +47,7 @@ func ReadXciMetadata(filePath string) (map[string]*ContentMetaAttributes, error)
 		fileOffset := secureOffset + int64(pfs0File.StartOffset)
 
 		if strings.Contains(pfs0File.Name, "cnmt.nca") {
-			_, section, err := openMetaNcaDataSection(file, fileOffset)
+			_, section, err := openMetaNcaDataSection(keyProvider, file, fileOffset)
 			if err != nil {
 				return nil, err
 			}
@@ -61,7 +61,7 @@ func ReadXciMetadata(filePath string) (map[string]*ContentMetaAttributes, error)
 			}
 
 			if currCnmt.Type == "BASE" || currCnmt.Type == "UPD" {
-				nacp, err := ExtractNacp(currCnmt, file, secureHfs0, secureOffset)
+				nacp, err := ExtractNacp(keyProvider, currCnmt, file, secureHfs0, secureOffset)
 				if err != nil {
 					zap.S().Debug("Failed to extract nacp [%v]\n", err.Error())
 				}

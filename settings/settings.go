@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/FrozenPear42/switch-library-manager/process"
+	"github.com/FrozenPear42/switch-library-manager/utils"
 	"github.com/creasty/defaults"
 	"github.com/google/uuid"
 	"gopkg.in/yaml.v2"
@@ -16,8 +17,8 @@ type OrganizeOptions struct {
 	RenameFiles          bool   `yaml:"renameFiles" default:"false"`
 	DeleteEmptyFolders   bool   `yaml:"deleteEmptyFolders" default:"false"`
 	DeleteOldUpdateFiles bool   `yaml:"deleteOldUpdateFiles" default:"false"`
-	FolderNameTemplate   string `yaml:"folderNameTemplate" default:"true"`
-	SwitchSafeFileNames  bool   `yaml:"switchSafeFileNames" default:"-"`
+	SwitchSafeFileNames  bool   `yaml:"switchSafeFileNames" default:"true"`
+	FolderNameTemplate   string `yaml:"folderNameTemplate" default:"-"`
 	FileNameTemplate     string `yaml:"fileNameTemplate" default:"-"`
 }
 
@@ -33,22 +34,22 @@ func (o *OrganizeOptions) SetDefaults() {
 }
 
 type AppSettings struct {
-	ScanDirectories   []string        `yaml:"scanDirectories" default:"[]"`
-	ScanRecursive     bool            `yaml:"scanRecursive" default:"true"`
 	Debug             bool            `yaml:"debug" default:"false"`
-	IgnoreDLCTitleIDs []string        `yaml:"ignoreDLCTitleIDs" default:"[]"`
-	TitlesEndpoint    string          `yaml:"titlesEndpoint" default:"https://tinfoil.media/repo/db/titles.json"`
-	TitlesFileName    string          `yaml:"titlesFileName" default:"titles.json"`
-	VersionsEndpoint  string          `yaml:"versionsEndpoint" default:"https://tinfoil.media/repo/db/versions.json"`
-	VersionsFileName  string          `yaml:"versionsFileName" default:"versions.json"`
+	IgnoreDLCTitleIDs []string        `yaml:"ignoreDLCTitleIDs" default:"[\"test\"]"`
 	ProdKeysPath      string          `yaml:"prodKeysPath" default:"-"`
 	AppDataDirectory  string          `yaml:"appDataDirectory" default:"-"`
+	ScanDirectories   []string        `yaml:"scanDirectories" default:"[]"`
+	ScanRecursive     bool            `yaml:"scanRecursive" default:"true"`
+	TitlesFileName    string          `yaml:"titlesFileName" default:"titles.json"`
+	VersionsFileName  string          `yaml:"versionsFileName" default:"versions.json"`
+	TitlesEndpoint    string          `yaml:"titlesEndpoint" default:"https://tinfoil.media/repo/db/titles.json"`
+	VersionsEndpoint  string          `yaml:"versionsEndpoint" default:"https://tinfoil.media/repo/db/versions.json"`
 	OrganizeOptions   OrganizeOptions `yaml:"organizeOptions"`
 }
 
 func (o *AppSettings) SetDefaults() {
 	if defaults.CanUpdate(o.AppDataDirectory) {
-		dir, err := os.Getwd()
+		dir, err := utils.GetExecDir()
 		if err == nil {
 			o.AppDataDirectory = dir
 		}

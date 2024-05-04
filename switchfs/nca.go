@@ -7,7 +7,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/FrozenPear42/switch-library-manager/switchfs/_crypto"
+	"github.com/FrozenPear42/switch-library-manager/keys"
+	"github.com/FrozenPear42/switch-library-manager/switchfs/switchcrypto"
 	"io"
 )
 
@@ -25,7 +26,7 @@ const (
 	NcaContentType_PublicData
 )
 
-func openMetaNcaDataSection(reader io.ReaderAt, ncaOffset int64) (*fsHeader, []byte, error) {
+func openMetaNcaDataSection(keyProvider keys.KeysProvider, reader io.ReaderAt, ncaOffset int64) (*fsHeader, []byte, error) {
 	//read the NCA headerBytes
 	encNcaHeader := make([]byte, 0xC00)
 	n, err := reader.ReadAt(encNcaHeader, ncaOffset)
@@ -37,12 +38,8 @@ func openMetaNcaDataSection(reader io.ReaderAt, ncaOffset int64) (*fsHeader, []b
 		return nil, nil, errors.New("failed to read NCA header")
 	}
 
-	keys, err := keys.SwitchKeys()
-	if err != nil {
-		return nil, nil, err
-	}
-	headerKey := keys.GetKey("header_key")
-	if headerKey == "" {
+	headerKey, ok := keyProvider.GetProdKey("header_key")
+	if !ok {
 		return nil, nil, errors.New("missing key - header_key")
 	}
 	ncaHeader, err := DecryptNcaHeader(headerKey, encNcaHeader)
@@ -85,7 +82,7 @@ func openMetaNcaDataSection(reader io.ReaderAt, ncaOffset int64) (*fsHeader, []b
 	/*if fsHeader.hashType != 2 { //Sha256 (FS_TYPE_PFS0)
 		return nil, errors.New("non FS_TYPE_PFS0")
 	}*/
-	decoded, err := decryptAesCtr(ncaHeader, fsHeader, entry.StartOffset, entry.Size, encodedEntryContent)
+	decoded, err := decryptAesCtr(keyProvider, ncaHeader, fsHeader, entry.StartOffset, entry.Size, encodedEntryContent)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -97,7 +94,7 @@ func openMetaNcaDataSection(reader io.ReaderAt, ncaOffset int64) (*fsHeader, []b
 	return fsHeader, decoded[hashInfo.pfs0HeaderOffset:], nil
 }
 
-func decryptAesCtr(ncaHeader *ncaHeader, fsHeader *fsHeader, offset uint32, size uint32, encoded []byte) ([]byte, error) {
+func decryptAesCtr(keyProvider keys.KeysProvider, ncaHeader *ncaHeader, fsHeader *fsHeader, offset uint32, size uint32, encoded []byte) ([]byte, error) {
 	keyRevision := ncaHeader.getKeyRevision()
 	cryptoType := ncaHeader.cryptoType
 
@@ -105,16 +102,14 @@ func decryptAesCtr(ncaHeader *ncaHeader, fsHeader *fsHeader, offset uint32, size
 		return []byte{}, errors.New("unsupported crypto type")
 	}
 
-	keys, _ := keys.SwitchKeys()
-
 	keyName := fmt.Sprintf("key_area_key_application_0%x", keyRevision)
-	KeyString := keys.GetKey(keyName)
-	if KeyString == "" {
+	KeyString, ok := keyProvider.GetProdKey(keyName)
+	if !ok {
 		return nil, errors.New(fmt.Sprintf("missing Key_area_key[%v]", keyName))
 	}
 	key, _ := hex.DecodeString(KeyString)
 
-	decKey := _crypto.DecryptAes128Ecb(ncaHeader.encryptedKeys[0x20:0x30], key)
+	decKey := switchcrypto.DecryptAes128Ecb(ncaHeader.encryptedKeys[0x20:0x30], key)
 
 	counter := make([]byte, 0x10)
 	binary.BigEndian.PutUint64(counter, uint64(fsHeader.generation))
