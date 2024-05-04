@@ -1,174 +1,166 @@
 package settings
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
-	"go.uber.org/zap"
-	"io/ioutil"
+	"github.com/FrozenPear42/switch-library-manager/process"
+	"github.com/creasty/defaults"
+	"github.com/google/uuid"
+	"gopkg.in/yaml.v2"
 	"os"
-	"path/filepath"
-)
-
-var (
-	settingsInstance *AppSettings
-)
-
-const (
-	SETTINGS_FILENAME      = "settings.json"
-	TITLE_JSON_FILENAME    = "titles.json"
-	VERSIONS_JSON_FILENAME = "versions.json"
-	SLM_VERSION            = "1.4.0"
-	TITLES_JSON_URL        = "https://tinfoil.media/repo/db/titles.json"
-	//TITLES_JSON_URL    = "https://raw.githubusercontent.com/blawar/titledb/master/titles.US.en.json"
-	VERSIONS_JSON_URL = "https://tinfoil.media/repo/db/versions.json"
-	//VERSIONS_JSON_URL = "https://raw.githubusercontent.com/blawar/titledb/master/versions.json"
-	SLM_VERSION_URL = "https://raw.githubusercontent.com/giwty/switch-library-manager/master/slm.json"
-)
-
-const (
-	TEMPLATE_TITLE_ID    = "TITLE_ID"
-	TEMPLATE_TITLE_NAME  = "TITLE_NAME"
-	TEMPLATE_DLC_NAME    = "DLC_NAME"
-	TEMPLATE_VERSION     = "VERSION"
-	TEMPLATE_REGION      = "REGION"
-	TEMPLATE_VERSION_TXT = "VERSION_TXT"
-	TEMPLATE_TYPE        = "TYPE"
+	"sync"
 )
 
 type OrganizeOptions struct {
-	CreateFolderPerGame  bool   `json:"create_folder_per_game"`
-	RenameFiles          bool   `json:"rename_files"`
-	DeleteEmptyFolders   bool   `json:"delete_empty_folders"`
-	DeleteOldUpdateFiles bool   `json:"delete_old_update_files"`
-	FolderNameTemplate   string `json:"folder_name_template"`
-	SwitchSafeFileNames  bool   `json:"switch_safe_file_names"`
-	FileNameTemplate     string `json:"file_name_template"`
+	CreateFolderPerGame  bool   `yaml:"createFolderPerGame" default:"false"`
+	RenameFiles          bool   `yaml:"renameFiles" default:"false"`
+	DeleteEmptyFolders   bool   `yaml:"deleteEmptyFolders" default:"false"`
+	DeleteOldUpdateFiles bool   `yaml:"deleteOldUpdateFiles" default:"false"`
+	FolderNameTemplate   string `yaml:"folderNameTemplate" default:"true"`
+	SwitchSafeFileNames  bool   `yaml:"switchSafeFileNames" default:"-"`
+	FileNameTemplate     string `yaml:"fileNameTemplate" default:"-"`
+}
+
+func (o *OrganizeOptions) SetDefaults() {
+	if defaults.CanUpdate(o.FileNameTemplate) {
+		o.FileNameTemplate = fmt.Sprintf("{%v} ({%v})[{%v}][v{%v}]",
+			process.TemplateTokenTitleName, process.TemplateTokenDLCName,
+			process.TemplateTokenTitleID, process.TemplateTokenVersion)
+	}
+	if defaults.CanUpdate(o.FolderNameTemplate) {
+		o.FolderNameTemplate = fmt.Sprintf("{%v}", process.TemplateTokenTitleName)
+	}
 }
 
 type AppSettings struct {
-	VersionsEtag           string          `json:"versions_etag"`
-	TitlesEtag             string          `json:"titles_etag"`
-	Prodkeys               string          `json:"prod_keys"`
-	Folder                 string          `json:"folder"`
-	ScanFolders            []string        `json:"scan_folders"`
-	GUI                    bool            `json:"gui"`
-	Debug                  bool            `json:"debug"`
-	CheckForMissingUpdates bool            `json:"check_for_missing_updates"`
-	CheckForMissingDLC     bool            `json:"check_for_missing_dlc"`
-	OrganizeOptions        OrganizeOptions `json:"organize_options"`
-	ScanRecursively        bool            `json:"scan_recursively"`
-	GuiPagingSize          int             `json:"gui_page_size"`
-	IgnoreDLCTitleIds      []string        `json:"ignore_dlc_title_ids"`
+	ScanDirectories   []string        `yaml:"scanDirectories" default:"[]"`
+	ScanRecursive     bool            `yaml:"scanRecursive" default:"true"`
+	Debug             bool            `yaml:"debug" default:"false"`
+	IgnoreDLCTitleIDs []string        `yaml:"ignoreDLCTitleIDs" default:"[]"`
+	TitlesEndpoint    string          `yaml:"titlesEndpoint" default:"https://tinfoil.media/repo/db/titles.json"`
+	TitlesFileName    string          `yaml:"titlesFileName" default:"titles.json"`
+	VersionsEndpoint  string          `yaml:"versionsEndpoint" default:"https://tinfoil.media/repo/db/versions.json"`
+	VersionsFileName  string          `yaml:"versionsFileName" default:"versions.json"`
+	ProdKeysPath      string          `yaml:"prodKeysPath" default:"-"`
+	AppDataDirectory  string          `yaml:"appDataDirectory" default:"-"`
+	OrganizeOptions   OrganizeOptions `yaml:"organizeOptions"`
 }
 
-func ReadSettingsAsJSON(baseFolder string) string {
-	if _, err := os.Stat(filepath.Join(baseFolder, SETTINGS_FILENAME)); err != nil {
-		saveDefaultSettings(baseFolder)
-	}
-	file, _ := os.Open(filepath.Join(baseFolder, SETTINGS_FILENAME))
-	bytes, _ := ioutil.ReadAll(file)
-	return string(bytes)
-}
-
-func ReadSettings(baseFolder string) *AppSettings {
-	if settingsInstance != nil {
-		return settingsInstance
-	}
-	settingsInstance = &AppSettings{Debug: false, GuiPagingSize: 100, ScanFolders: []string{},
-		OrganizeOptions: OrganizeOptions{SwitchSafeFileNames: true}, Prodkeys: "", IgnoreDLCTitleIds: []string{"01007F600B135007"}}
-	if _, err := os.Stat(filepath.Join(baseFolder, SETTINGS_FILENAME)); err == nil {
-		file, err := os.Open(filepath.Join(baseFolder, SETTINGS_FILENAME))
-		if err != nil {
-			zap.S().Warnf("Missing or corrupted config file, creating a new one")
-			return saveDefaultSettings(baseFolder)
-		} else {
-			_ = json.NewDecoder(file).Decode(&settingsInstance)
-			return settingsInstance
+func (o *AppSettings) SetDefaults() {
+	if defaults.CanUpdate(o.AppDataDirectory) {
+		dir, err := os.Getwd()
+		if err == nil {
+			o.AppDataDirectory = dir
 		}
-	} else {
-		return saveDefaultSettings(baseFolder)
 	}
 }
 
-func saveDefaultSettings(baseFolder string) *AppSettings {
-	settingsInstance = &AppSettings{
-		TitlesEtag:             "W/\"a5b02845cf6bd61:0\"",
-		VersionsEtag:           "W/\"2ef50d1cb6bd61:0\"",
-		Folder:                 "",
-		ScanFolders:            []string{},
-		IgnoreDLCTitleIds:      []string{},
-		GUI:                    true,
-		GuiPagingSize:          100,
-		CheckForMissingUpdates: true,
-		CheckForMissingDLC:     true,
-		ScanRecursively:        true,
-		Debug:                  false,
-		OrganizeOptions: OrganizeOptions{
-			RenameFiles:         false,
-			CreateFolderPerGame: false,
-			FolderNameTemplate:  fmt.Sprintf("{%v}", TEMPLATE_TITLE_NAME),
-			FileNameTemplate: fmt.Sprintf("{%v} ({%v})[{%v}][v{%v}]", TEMPLATE_TITLE_NAME, TEMPLATE_DLC_NAME,
-				TEMPLATE_TITLE_ID, TEMPLATE_VERSION),
-			DeleteEmptyFolders:   false,
-			SwitchSafeFileNames:  true,
-			DeleteOldUpdateFiles: false,
-		},
+var (
+	ErrConfigurationFileNotFound = errors.New("configuration file not found")
+)
+
+type ConfigurationChangedCallback func(old AppSettings, new AppSettings)
+type UnsubscribeFunction func()
+
+type ConfigurationProvider interface {
+	// GetCurrentConfig retrieves current config or return s default if no config is present.
+	GetCurrentConfig() AppSettings
+	// UpdateConfig updates configuration and persists it in file if possible.
+	UpdateConfig(settings AppSettings) error
+	// OnConfigurationChanged registers callback on configuration changes. Returns a function that has to be called to unsubscribe.
+	OnConfigurationChanged(callback ConfigurationChangedCallback) UnsubscribeFunction
+}
+
+type ConfigurationProviderImpl struct {
+	mutex            sync.RWMutex
+	settingsInstance AppSettings
+	listeners        map[string]ConfigurationChangedCallback
+	configFilePath   string
+}
+
+func NewConfigurationProvider(configFilePath string) (*ConfigurationProviderImpl, error) {
+	var settings AppSettings
+	err := defaults.Set(&settings)
+	if err != nil {
+		return nil, err
 	}
-	return SaveSettings(settingsInstance, baseFolder)
+
+	return &ConfigurationProviderImpl{
+		mutex:            sync.RWMutex{},
+		settingsInstance: settings,
+		listeners:        make(map[string]ConfigurationChangedCallback),
+		configFilePath:   configFilePath,
+	}, nil
+
 }
 
-func SaveSettings(settings *AppSettings, baseFolder string) *AppSettings {
-	file, _ := json.MarshalIndent(settings, "", " ")
-	_ = ioutil.WriteFile(filepath.Join(baseFolder, SETTINGS_FILENAME), file, 0644)
-	settingsInstance = settings
-	return settings
+func (c *ConfigurationProviderImpl) LoadFromFile() error {
+	f, err := os.Open(c.configFilePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("%w: %w", ErrConfigurationFileNotFound, err)
+		}
+		return err
+	}
+	defer f.Close()
+
+	var settings AppSettings
+	err = yaml.NewDecoder(f).Decode(&settings)
+	if err != nil {
+		return err
+	}
+	err = defaults.Set(&settings)
+	if err != nil {
+		return err
+	}
+
+	c.mutex.Lock()
+	c.settingsInstance = settings
+	defer c.mutex.Unlock()
+	return nil
 }
 
-func CheckForUpdates() (string, bool, error) {
-	//
-	//localVer := SLM_VERSION
-	//
-	//res, err := http.Get(SLM_VERSION_URL)
-	//if err != nil {
-	//	return false, err
-	//}
-	//defer res.Body.Close()
-	//
-	//body, err := ioutil.ReadAll(res.Body)
-	//if err != nil {
-	//	return false, err
-	//}
-	//
-	//remoteValues := map[string]string{}
-	//err = json.Unmarshal(body, &remoteValues)
-	//if err != nil {
-	//	return false, err
-	//}
-	//
-	//remoteVer := remoteValues["version"]
-	//
-	//if version.CompareSimple(remoteVer, localVer) > 0 {
-	//	return true, nil
-	//}
-	//
-	//return false, nil
-	return SoftwareVersion, false, nil
+func (c *ConfigurationProviderImpl) SaveToFile() error {
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
+
+	f, err := os.OpenFile(c.configFilePath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	err = yaml.NewEncoder(f).Encode(&c.settingsInstance)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-//func ReloadSettings() error {
-//	viper.SetDefault("prodKeysPath", "./prod.keys")
-//	viper.SetDefault("dataPath", "./")
-//	viper.SetDefault("ignore.dlcIds", []string{})
-//	viper.SetDefault("localDB.titlesEtag", "https://tinfoil.media/repo/db/titles.json")
-//	viper.SetDefault("switchDB.titlesEtag", "https://tinfoil.media/repo/db/titles.json")
-//	viper.SetDefault("switchDB.titlesUrl", "https://tinfoil.media/repo/db/titles.json")
-//	viper.SetDefault("switchDB.versionsEtag", "https://tinfoil.media/repo/db/titles.json")
-//	viper.SetDefault("switchDB.versionsUrl", "https://tinfoil.media/repo/db/versions.json")
-//	viper.SetDefault("update.url", "https://raw.githubusercontent.com/giwty/switch-library-manager/master/slm.json")
-//}
-//
-//func GetSettings() *AppSettings {}
+func (c *ConfigurationProviderImpl) GetCurrentConfig() AppSettings {
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
+	return c.settingsInstance
+}
 
-func CurrentSettings() AppSettings {
-	return *settingsInstance
+func (c *ConfigurationProviderImpl) UpdateConfig(settings AppSettings) error {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	c.settingsInstance = settings
+	// TODO: save to file
+	return nil
+}
+
+func (c *ConfigurationProviderImpl) OnConfigurationChanged(callback ConfigurationChangedCallback) UnsubscribeFunction {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	callbackID := uuid.New().String()
+	c.listeners[callbackID] = callback
+
+	return func() {
+		c.mutex.Lock()
+		defer c.mutex.Unlock()
+		delete(c.listeners, callbackID)
+	}
 }

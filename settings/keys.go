@@ -1,53 +1,41 @@
 package settings
 
 import (
-	"errors"
+	"fmt"
 	"github.com/magiconair/properties"
-	"path/filepath"
 )
 
-var (
-	keysInstance *switchKeys
-)
+type KeysProvider interface {
+	GetProdKey(keyName string) (string, bool)
+}
 
-type switchKeys struct {
+type KeysProviderImpl struct {
 	keys map[string]string
 }
 
-func (k *switchKeys) GetKey(keyName string) string {
-	return k.keys[keyName]
-}
+func (p *KeysProviderImpl) LoadFromFile(paths []string) error {
+	var prodKeys *properties.Properties
 
-func SwitchKeys() (*switchKeys, error) {
-	return keysInstance, nil
-}
-
-func InitSwitchKeys(baseFolder string) (*switchKeys, error) {
-
-	// init from a file
-	path := filepath.Join(baseFolder, "prod.keys")
-	p, err := properties.LoadFile(path, properties.UTF8)
-	if err != nil {
-		path = "${HOME}/.switch/prod.keys"
-		p, err = properties.LoadFile(path, properties.UTF8)
-	}
-	settings := ReadSettings(baseFolder)
-	if err != nil {
-		path := settings.Prodkeys
-		if path != "" {
-			p, err = properties.LoadFile(filepath.Join(path, "prod.keys"), properties.UTF8)
+	for _, path := range paths {
+		keyFile, err := properties.LoadFile(path, properties.UTF8)
+		if err == nil {
+			prodKeys = keyFile
+			break
 		}
 	}
-	if err != nil {
-		return nil, errors.New("Error trying to read prod.keys [reason:" + err.Error() + "]")
-	}
-	settings.Prodkeys = path
-	SaveSettings(settings, baseFolder)
-	keysInstance = &switchKeys{keys: map[string]string{}}
-	for _, key := range p.Keys() {
-		value, _ := p.Get(key)
-		keysInstance.keys[key] = value
+	if prodKeys == nil {
+		return fmt.Errorf("could not open files in any of provided paths")
 	}
 
-	return keysInstance, nil
+	p.keys = make(map[string]string)
+	for _, key := range prodKeys.Keys() {
+		value, _ := prodKeys.Get(key)
+		p.keys[key] = value
+	}
+	return nil
+}
+
+func (p *KeysProviderImpl) GetProdKey(keyName string) (string, bool) {
+	k, ok := p.keys[keyName]
+	return k, ok
 }

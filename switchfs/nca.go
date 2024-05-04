@@ -7,8 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/giwty/switch-library-manager/settings"
-	"github.com/giwty/switch-library-manager/switchfs/_crypto"
+	"github.com/FrozenPear42/switch-library-manager/switchfs/_crypto"
 	"io"
 )
 
@@ -38,7 +37,7 @@ func openMetaNcaDataSection(reader io.ReaderAt, ncaOffset int64) (*fsHeader, []b
 		return nil, nil, errors.New("failed to read NCA header")
 	}
 
-	keys, err := settings.SwitchKeys()
+	keys, err := keys.SwitchKeys()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -106,7 +105,7 @@ func decryptAesCtr(ncaHeader *ncaHeader, fsHeader *fsHeader, offset uint32, size
 		return []byte{}, errors.New("unsupported crypto type")
 	}
 
-	keys, _ := settings.SwitchKeys()
+	keys, _ := keys.SwitchKeys()
 
 	keyName := fmt.Sprintf("key_area_key_application_0%x", keyRevision)
 	KeyString := keys.GetKey(keyName)

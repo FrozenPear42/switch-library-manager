@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/giwty/switch-library-manager/db"
-	"github.com/giwty/switch-library-manager/settings"
+	"github.com/FrozenPear42/switch-library-manager/db"
+	"github.com/FrozenPear42/switch-library-manager/settings"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.uber.org/zap"
 	"time"
@@ -46,12 +46,12 @@ const (
 
 // App struct
 type App struct {
-	ctx            context.Context
-	sugarLogger    *zap.SugaredLogger
-	switchDB       *db.SwitchTitlesDB
-	localDB        *db.LocalSwitchFilesDB
-	localDbManager *db.LocalSwitchDBManager
-
+	ctx                context.Context
+	sugarLogger        *zap.SugaredLogger
+	switchDB           *db.SwitchTitlesDB
+	localDB            *db.LocalSwitchFilesDB
+	localDbManager     *db.LocalSwitchDBManager
+	configProvider     settings.ConfigurationProvider
 	recentStartupEvent EventMessage
 }
 
@@ -81,7 +81,7 @@ func (a *App) Rescan(hard bool) {
 }
 
 func (a *App) OrganizeLibrary() {
-	//folderToScan := settings.ReadSettings(g.baseFolder).Folder
+	//folderToScan := settings.ReadSettings(g.baseFolder).AppDataDirectory
 	//options := settings.ReadSettings(g.baseFolder).OrganizeOptions
 	//if !process.IsOptionsValid(options) {
 	//	zap.S().Error("the organize options in settings.json are not valid, please check that the template contains file/folder name")
@@ -118,10 +118,10 @@ func (a *App) LoadCatalogue() []SwitchTitle {
 }
 
 func (a *App) LoadLocalGames() {
-	//folderToScan := settings.ReadSettings(g.baseFolder).Folder
+	//folderToScan := settings.ReadSettings(g.baseFolder).AppDataDirectory
 	//recursiveMode := settings.ReadSettings(g.baseFolder).ScanRecursively
 	//
-	//scanFolders := settings.ReadSettings(g.baseFolder).ScanFolders
+	//scanFolders := settings.ReadSettings(g.baseFolder).ScanDirectories
 	//scanFolders = append(scanFolders, folderToScan)
 	//localDB, err := a.localDbManager.CreateLocalSwitchFilesDB(scanFolders, g, recursiveMode, ignoreCache)
 	//a.localDB = localDB
@@ -129,7 +129,7 @@ func (a *App) LoadLocalGames() {
 	//// get ignore ids
 	//settingsObj := settings.ReadSettings(g.baseFolder)
 	//ignoreIds := map[string]struct{}{}
-	//for _, id := range settingsObj.IgnoreDLCTitleIds {
+	//for _, id := range settingsObj.IgnoreDLCTitleIDs {
 	//	ignoreIds[strings.ToLower(id)] = struct{}{}
 	//}
 	//
@@ -240,22 +240,27 @@ func (a *App) initializeSwitchDB() error {
 	a.recentStartupEvent = message
 	runtime.EventsEmit(a.ctx, string(EventTypeStartupProgress), message)
 
-	//workingDirectory := "./"
+	//updateProgress := func(step, total int, message string, running, complete bool) {
+	//
+	//}
+	//
+	//config := a.configProvider.GetCurrentConfig()
+	//appDirectory := config.AppDataDirectory
 	//
 	////1. load the titles JSON object
-	//g.UpdateProgress(1, 4, "Downloading titles.json")
-	//filename := filepath.Join(g.baseFolder, settings.TITLE_JSON_FILENAME)
-	//titleFile, titlesEtag, err := db.LoadAndUpdateFile(settings.TITLES_JSON_URL, filename, settingsObj.TitlesEtag)
+	//updateProgress(1, 4, "Downloading titles.json", true, false)
+	//
+	//titlesFilename := filepath.Join(appDirectory, config.TitlesFileName)
+	//titleFile, titlesEtag, err := db.LoadAndUpdateFile(config.TitlesFileName, titlesFilename, settingsObj.TitlesEtag)
 	//if err != nil {
-	//	return nil, errors.New("failed to download switch titles [reason:" + err.Error() + "]")
+	//	return fmt.Errorf("failed to download switch titles [reason: %w]", err)
 	//}
-	//settingsObj.TitlesEtag = titlesEtag
 	//
 	//g.UpdateProgress(2, 4, "Downloading versions.json")
-	//filename = filepath.Join(g.baseFolder, settings.VERSIONS_JSON_FILENAME)
-	//versionsFile, versionsEtag, err := db.LoadAndUpdateFile(settings.VERSIONS_JSON_URL, filename, settingsObj.VersionsEtag)
+	//titlesFilename = filepath.Join(g.baseFolder, settings.VERSIONS_JSON_FILENAME)
+	//versionsFile, versionsEtag, err := db.LoadAndUpdateFile(settings.VERSIONS_JSON_URL, titlesFilename, settingsObj.VersionsEtag)
 	//if err != nil {
-	//	return nil, errors.New("failed to download switch updates [reason:" + err.Error() + "]")
+	//	return fmt.Errorf("failed to download switch updates [reason: %w]", err)
 	//}
 	//settingsObj.VersionsEtag = versionsEtag
 	//
@@ -265,5 +270,6 @@ func (a *App) initializeSwitchDB() error {
 	//switchTitleDB, err := db.CreateSwitchTitleDB(titleFile, versionsFile)
 	//g.UpdateProgress(4, 4, "Finishing up...")
 	//return switchTitleDB, err
+	//return nil
 	return nil
 }

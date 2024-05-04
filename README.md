@@ -99,7 +99,7 @@ Please set debug mode to 'true', and attach the slm.log to allow for quicker res
 
 ## Building
 - Install and setup Go
-- Clone the repo: `git clone https://github.com/giwty/switch-library-manager.git`
+- Clone the repo: `git clone https://github.com/FrozenPear42/switch-library-manager.git`
 - Get the bundler `go get -u github.com/asticode/go-astilectron-bundler/...`
 - Install bundler `go install github.com/asticode/go-astilectron-bundler/astilectron-bundler`
 - Copy bundler binary to the source folder `cd switch-library-manager` and then `mv $HOME/go/bin/astilectron-bundler .`

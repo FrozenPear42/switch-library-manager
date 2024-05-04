@@ -4,9 +4,9 @@ package old
 //import (
 //	"flag"
 //	"fmt"
-//	"github.com/giwty/switch-library-manager/db"
-//	"github.com/giwty/switch-library-manager/process"
-//	"github.com/giwty/switch-library-manager/settings"
+//	"github.com/FrozenPear42/switch-library-manager/db"
+//	"github.com/FrozenPear42/switch-library-manager/process"
+//	"github.com/FrozenPear42/switch-library-manager/settings"
 //	"github.com/jedib0t/go-pretty/table"
 //	"github.com/schollz/progressbar/v3"
 //	"go.uber.org/zap"
@@ -76,7 +76,7 @@ package old
 //	titlesDB, err := db.CreateSwitchTitleDB(titleFile, versionsFile)
 //
 //	//5. read local files
-//	folderToScan := settingsObj.Folder
+//	folderToScan := settingsObj.AppDataDirectory
 //	if nspFolder != nil && *nspFolder != "" {
 //		folderToScan = *nspFolder
 //	}
@@ -104,7 +104,7 @@ package old
 //	}
 //	defer localDbManager.Close()
 //
-//	scanFolders := settingsObj.ScanFolders
+//	scanFolders := settingsObj.ScanDirectories
 //	scanFolders = append(scanFolders, folderToScan)
 //
 //	localDB, err := localDbManager.CreateLocalSwitchFilesDB(scanFolders, c, recursiveMode, true)
@@ -190,7 +190,7 @@ package old
 //func (c *Console) processMissingDLC(localDB *db.LocalSwitchFilesDB, titlesDB *db.SwitchTitlesDB) {
 //	settingsObj := settings.ReadSettings(c.baseFolder)
 //	ignoreIds := map[string]struct{}{}
-//	for _, id := range settingsObj.IgnoreDLCTitleIds {
+//	for _, id := range settingsObj.IgnoreDLCTitleIDs {
 //		ignoreIds[strings.ToLower(id)] = struct{}{}
 //	}
 //	incompleteTitles := process.ScanForMissingDLC(localDB.TitlesMap, titlesDB.TitlesMap, ignoreIds)

@@ -5,7 +5,6 @@ import (
 	"encoding/gob"
 	"fmt"
 	"github.com/boltdb/bolt"
-	"github.com/giwty/switch-library-manager/settings"
 	"go.uber.org/zap"
 	"log"
 	"path/filepath"
@@ -13,6 +12,7 @@ import (
 
 const (
 	DB_INTERNAL_TABLENAME = "internal-metadata"
+	VERSION               = "1.4"
 )
 
 type PersistentDB struct {
@@ -36,7 +36,7 @@ func NewPersistentDB(baseFolder string) (*PersistentDB, error) {
 			if b == nil || err != nil {
 				return fmt.Errorf("create bucket: %s", err)
 			}
-			err = b.Put([]byte("app_version"), []byte(settings.SLM_VERSION))
+			err = b.Put([]byte("app_version"), []byte(VERSION))
 			if err != nil {
 				zap.S().Warnf("failed to save app_version - %v", err)
 				return err

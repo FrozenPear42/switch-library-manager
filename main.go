@@ -2,9 +2,10 @@ package main
 
 import (
 	"embed"
+	"errors"
 	"fmt"
-	"github.com/giwty/switch-library-manager/db"
-	"github.com/giwty/switch-library-manager/settings"
+	"github.com/FrozenPear42/switch-library-manager/db"
+	"github.com/FrozenPear42/switch-library-manager/settings"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -28,9 +29,30 @@ func main() {
 		return
 	}
 
-	appSettings := settings.ReadSettings(workingDirectory)
+	configurationProvider, err := settings.NewConfigurationProvider(filepath.Join(workingDirectory, "settings.yaml"))
+	if err != nil {
+		fmt.Println("Failed to initialize config provider. Aborting.")
+		return
+	}
 
-	logger := createLogger(workingDirectory, appSettings.Debug)
+	err = configurationProvider.LoadFromFile()
+	if err != nil {
+		if errors.Is(err, settings.ErrConfigurationFileNotFound) {
+			fmt.Println("Configuration file not found. Using default configuration. Creating new configuration file.")
+			err = configurationProvider.SaveToFile()
+			if err != nil {
+				fmt.Println("Could not save new configuration file. Aborting.")
+				return
+			}
+		} else {
+			fmt.Printf("Failed to load configuration file. Aborting. (%v)\n", err)
+			return
+		}
+	}
+
+	config := configurationProvider.GetCurrentConfig()
+
+	logger := createLogger(workingDirectory, config.Debug)
 	defer logger.Sync() // flushes buffer, if any
 	sugar := logger.Sugar()
 
@@ -44,7 +66,7 @@ func main() {
 		return
 	}
 
-	_, err = settings.InitSwitchKeys(workingDirectory)
+	_, err = keys.InitSwitchKeys(workingDirectory)
 	if err != nil {
 		sugar.Error("Failed to initialize keys\n", err)
 		return

@@ -3,9 +3,8 @@ package db
 import (
 	"errors"
 	"fmt"
-	"github.com/giwty/switch-library-manager/fileio"
-	"github.com/giwty/switch-library-manager/settings"
-	"github.com/giwty/switch-library-manager/switchfs"
+	"github.com/FrozenPear42/switch-library-manager/fileio"
+	"github.com/FrozenPear42/switch-library-manager/switchfs"
 	"go.uber.org/zap"
 	"os"
 	"path/filepath"
@@ -283,7 +282,7 @@ func (ldb *LocalSwitchDBManager) getGameMetadata(file ExtendedFileInfo,
 	skipped map[ExtendedFileInfo]SkippedFile) (map[string]*switchfs.ContentMetaAttributes, error) {
 
 	var metadata map[string]*switchfs.ContentMetaAttributes = nil
-	keys, _ := settings.SwitchKeys()
+	keys, _ := keys.SwitchKeys()
 	var err error
 	fileKey := filePath + "|" + file.FileName + "|" + strconv.Itoa(int(file.Size))
 	if keys != nil && keys.GetKey("header_key") != "" {

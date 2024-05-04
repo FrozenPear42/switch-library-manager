@@ -18,6 +18,7 @@ type ProgressUpdater interface {
 }
 
 func LoadAndUpdateFile(url string, filePath string, etag string) (*os.File, string, error) {
+	// TODO: handle etag here
 
 	//create file if not exist
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
