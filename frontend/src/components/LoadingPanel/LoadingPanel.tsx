@@ -18,7 +18,7 @@ export default function LoadingPanel() {
 
       <div className={styles.progressBar}>
         <ProgressBar
-          progress={state ? (state.stageCurrent / state.stageTotal) * 100 : 0}
+          progress={state ? ((state.stageCurrent / state.stageTotal) * 100) : 0}
         ></ProgressBar>
       </div>
       <div className={styles.progressText}>

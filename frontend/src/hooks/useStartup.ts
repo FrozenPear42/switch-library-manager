@@ -18,16 +18,17 @@ type HookReturnType = {
 };
 
 export const useStartup = (): HookReturnType => {
-  const [state, setState] = useState<StartupState | null>(null);
+  const [startupState, setStartupState] = useState<StartupState | null>(null);
 
   useEffect(() => {
     const unsubscribe = EventsOn(
       EventType.StartupProgress,
       (payload: EventMessage) => {
+        console.log("received startup event", payload);
         if (payload.type !== EventType.StartupProgress) {
           return;
         }
-        setState(<StartupState>{
+        setStartupState(<StartupState>{
           completed: payload.data.completed,
           running: payload.data.running,
           stageMessage: payload.data.message,
@@ -38,9 +39,9 @@ export const useStartup = (): HookReturnType => {
     );
     RequestStartupProgress();
     return unsubscribe;
-  }, [setState]);
+  }, [setStartupState]);
 
   return {
-    state,
+    state: startupState,
   };
 };

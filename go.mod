@@ -9,8 +9,11 @@ require (
 	github.com/google/uuid v1.4.0
 	github.com/hashicorp/go-version v1.6.0
 	github.com/magiconair/properties v1.8.7
+	github.com/timshannon/bolthold v0.0.0-20240314194003-30aac6950928
 	github.com/wailsapp/wails/v2 v2.8.1
+	go.etcd.io/bbolt v1.3.9
 	go.uber.org/zap v1.21.0
+	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 	gopkg.in/yaml.v2 v2.4.0
 	robpike.io/nihongo v0.0.0-20200511095354-a985f0929cfa
 )
@@ -43,7 +46,6 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/crypto v0.18.0 // indirect
-	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect

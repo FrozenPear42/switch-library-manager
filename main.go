@@ -7,6 +7,7 @@ import (
 	"github.com/FrozenPear42/switch-library-manager/db"
 	"github.com/FrozenPear42/switch-library-manager/keys"
 	"github.com/FrozenPear42/switch-library-manager/settings"
+	"github.com/FrozenPear42/switch-library-manager/storage"
 	"github.com/FrozenPear42/switch-library-manager/utils"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -55,12 +56,14 @@ func main() {
 	sugar.Info("[SLM starts]")
 	sugar.Infof("[Working directory: %v]", workingDirectory)
 
+	database, err := storage.NewDatabase(filepath.Join(workingDirectory, "slm_full.db"))
+
 	localDbManager, err := db.NewLocalSwitchDBManager(workingDirectory)
 	if err != nil {
 		sugar.Error("Failed to create local files db\n", err)
 		return
 	}
-
+	_ = localDbManager
 	keyProvider := keys.NewKeyProvider()
 	keyPaths := []string{
 		config.ProdKeysPath,
@@ -75,7 +78,7 @@ func main() {
 	}
 
 	// Create an instance of the app structure
-	app := NewApp(sugar, localDbManager)
+	app := NewApp(sugar, configurationProvider, database)
 
 	// Create application with options
 	err = wails.Run(&options.App{

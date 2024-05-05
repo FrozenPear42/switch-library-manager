@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
+	"github.com/FrozenPear42/switch-library-manager/data"
 	"github.com/FrozenPear42/switch-library-manager/db"
 	"github.com/FrozenPear42/switch-library-manager/settings"
+	"github.com/FrozenPear42/switch-library-manager/storage"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.uber.org/zap"
-	"time"
 )
 
 type SwitchTitle struct {
@@ -48,6 +49,7 @@ const (
 type App struct {
 	ctx                context.Context
 	sugarLogger        *zap.SugaredLogger
+	fullDB             storage.SwitchDatabase
 	switchDB           *db.SwitchTitlesDB
 	localDB            *db.LocalSwitchFilesDB
 	localDbManager     *db.LocalSwitchDBManager
@@ -56,9 +58,11 @@ type App struct {
 }
 
 // NewApp creates a new App application struct
-func NewApp(sugarLogger *zap.SugaredLogger, localDbManager *db.LocalSwitchDBManager) *App {
+func NewApp(sugarLogger *zap.SugaredLogger, configProvider settings.ConfigurationProvider, database storage.SwitchDatabase) *App {
 	return &App{
 		sugarLogger:    sugarLogger,
+		fullDB:         database,
+		configProvider: configProvider,
 		switchDB:       nil,
 		localDB:        nil,
 		localDbManager: nil,
@@ -170,106 +174,29 @@ func (a *App) updateProgress(curr int, total int, message string) {
 }
 
 func (a *App) initializeSwitchDB() error {
-	<-time.After(2 * time.Second)
-	message := EventMessage{
-		Type: string(EventTypeStartupProgress),
-		Data: StartupProgressPayload{
-			Completed: false,
-			Running:   true,
-			Message:   "Downloading titles.json",
-			Current:   1,
-			Total:     4,
-		},
+	updateProgress := func(step, total int, message string) {
+		a.sugarLogger.Infof("progress update: %v/%v %v", step, total, message)
+		eventMessage := EventMessage{
+			Type: string(EventTypeStartupProgress),
+			Data: StartupProgressPayload{
+				Completed: step == total,
+				Running:   step > 0 && step != total,
+				Message:   message,
+				Current:   step,
+				Total:     total,
+			},
+		}
+		a.recentStartupEvent = eventMessage
+		runtime.EventsEmit(a.ctx, string(EventTypeStartupProgress), eventMessage)
 	}
-	a.recentStartupEvent = message
-	runtime.EventsEmit(a.ctx, string(EventTypeStartupProgress), message)
 
-	<-time.After(2 * time.Second)
-	message = EventMessage{
-		Type: string(EventTypeStartupProgress),
-		Data: StartupProgressPayload{
-			Completed: false,
-			Running:   true,
-			Message:   "Downloading versions.json",
-			Current:   2,
-			Total:     4,
-		},
+	config := a.configProvider.GetCurrentConfig()
+
+	err := data.BuildCatalog(a.fullDB, config.TitlesEndpoint, config.VersionsEndpoint, updateProgress)
+	if err != nil {
+		a.sugarLogger.Errorf("could not build title catalog: %v", err)
+		runtime.Quit(a.ctx)
+
 	}
-	a.recentStartupEvent = message
-	runtime.EventsEmit(a.ctx, string(EventTypeStartupProgress), message)
-
-	<-time.After(2 * time.Second)
-	message = EventMessage{
-		Type: string(EventTypeStartupProgress),
-		Data: StartupProgressPayload{
-			Completed: false,
-			Running:   true,
-			Message:   "Processing switch titles and updates...",
-			Current:   3,
-			Total:     4,
-		},
-	}
-	a.recentStartupEvent = message
-	runtime.EventsEmit(a.ctx, string(EventTypeStartupProgress), message)
-
-	<-time.After(2 * time.Second)
-	message = EventMessage{
-		Type: string(EventTypeStartupProgress),
-		Data: StartupProgressPayload{
-			Completed: false,
-			Running:   true,
-			Message:   "Finishing up...",
-			Current:   4,
-			Total:     4,
-		},
-	}
-	a.recentStartupEvent = message
-	runtime.EventsEmit(a.ctx, string(EventTypeStartupProgress), message)
-
-	<-time.After(2 * time.Second)
-	message = EventMessage{
-		Type: string(EventTypeStartupProgress),
-		Data: StartupProgressPayload{
-			Completed: true,
-			Running:   false,
-			Message:   "",
-			Current:   4,
-			Total:     4,
-		},
-	}
-	a.recentStartupEvent = message
-	runtime.EventsEmit(a.ctx, string(EventTypeStartupProgress), message)
-
-	//updateProgress := func(step, total int, message string, running, complete bool) {
-	//
-	//}
-	//
-	//config := a.configProvider.GetCurrentConfig()
-	//appDirectory := config.AppDataDirectory
-	//
-	////1. load the titles JSON object
-	//updateProgress(1, 4, "Downloading titles.json", true, false)
-	//
-	//titlesFilename := filepath.Join(appDirectory, config.TitlesFileName)
-	//titleFile, titlesEtag, err := db.LoadAndUpdateFile(config.TitlesFileName, titlesFilename, settingsObj.TitlesEtag)
-	//if err != nil {
-	//	return fmt.Errorf("failed to download switch titles [reason: %w]", err)
-	//}
-	//
-	//g.UpdateProgress(2, 4, "Downloading versions.json")
-	//titlesFilename = filepath.Join(g.baseFolder, settings.VERSIONS_JSON_FILENAME)
-	//versionsFile, versionsEtag, err := db.LoadAndUpdateFile(settings.VERSIONS_JSON_URL, titlesFilename, settingsObj.VersionsEtag)
-	//if err != nil {
-	//	return fmt.Errorf("failed to download switch updates [reason: %w]", err)
-	//}
-	//settingsObj.VersionsEtag = versionsEtag
-	//
-	//settings.SaveSettings(settingsObj, g.baseFolder)
-	//
-	//g.UpdateProgress(3, 4, "Processing switch titles and updates ...")
-	//switchTitleDB, err := db.CreateSwitchTitleDB(titleFile, versionsFile)
-	//g.UpdateProgress(4, 4, "Finishing up...")
-	//return switchTitleDB, err
-	//return nil
 	return nil
 }
