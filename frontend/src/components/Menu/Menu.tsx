@@ -16,7 +16,7 @@ export default function Menu() {
       </a>
       <a className={styles.menuItem}>
         <IconDatabase />
-        <label>Catalogue</label>
+        <label>Catalog</label>
       </a>
       <a className={styles.menuItem}>
         <IconNut />

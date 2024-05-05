@@ -16,7 +16,7 @@ type SwitchDatabaseCatalog interface {
 
 	AddCatalogEntries(entries map[string]CatalogEntry) error
 	GetCatalogEntryByID(id string) (CatalogEntry, bool, error)
-	GetCatalogEntries(filters any, pageSize int, cursor int)
+	GetCatalogEntries(filters any, pageSize int, cursor int) (map[string]CatalogEntry, error)
 	ClearCatalog() error
 }
 
@@ -88,7 +88,7 @@ func (d *Database) GetCatalogEntryByID(id string) (CatalogEntry, bool, error) {
 	panic("implement me")
 }
 
-func (d *Database) GetCatalogEntries(filters any, pageSize int, cursor int) {
+func (d *Database) GetCatalogEntries(filters any, pageSize int, cursor int) (map[string]CatalogEntry, error) {
 	panic("implement me")
 }
 

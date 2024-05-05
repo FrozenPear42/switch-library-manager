@@ -19,6 +19,12 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+type Test struct{}
+
+func (t *Test) Test() (int, error) {
+	return 10, nil
+}
+
 func main() {
 	workingDirectory, err := utils.GetExecDir()
 	if err != nil {
@@ -83,8 +89,8 @@ func main() {
 	// Create application with options
 	err = wails.Run(&options.App{
 		Title:  "Switch Library Manager",
-		Width:  1024,
-		Height: 768,
+		Width:  1280,
+		Height: 1024,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
@@ -92,6 +98,7 @@ func main() {
 		OnStartup:        app.startup,
 		Bind: []interface{}{
 			app,
+			&Test{},
 		},
 	})
 
