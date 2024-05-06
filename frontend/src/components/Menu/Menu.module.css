@@ -16,6 +16,9 @@
   font-size: 0.825rem;
   opacity: 0.6;
   border-radius: 0.5rem;
+  cursor: pointer;
+  color: #ffffff;
+  text-decoration: none;
 
   &.active {
     opacity: 1;
@@ -23,7 +26,6 @@
   }
 
   &:hover {
-    cursor: pointer;
     opacity: 1;
     background-color: #404040;
   }

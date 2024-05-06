@@ -1,0 +1,46 @@
+.wrapper {
+  --collapsed-height: 150px;
+  --content-height: 100vh;
+}
+
+.content {
+  position: relative;
+  transition: 600ms ease-out;
+  max-height: var(--content-height);
+  mask-image: linear-gradient(black 90%, #00000000);
+  mask-repeat: no-repeat;
+  mask-size: auto 100vh;
+  mask-position: 0px 0px;
+
+  &.collapsed {
+    overflow: hidden;
+    max-height: var(--collapsed-height);
+    mask-position: 0px 100%;
+    transition: 10ms ease-out;
+  }
+}
+
+.action {
+  position: relative;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  padding-top: 0.5rem;
+
+  &.collapsed {
+    position: absolute;
+    padding-block: 1rem;
+    bottom: 0;
+    left: 0;
+  }
+}
+
+.button {
+  outline: none;
+  background: #b630d1;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  color: white;
+  cursor: pointer;
+}

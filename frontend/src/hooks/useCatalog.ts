@@ -24,6 +24,7 @@ export const useCatalog = (filters?: CatalogFilters): HookReturnType => {
         const catalog = await LoadCatalog();
         setData(catalog);
       } catch (e) {
+        console.error(e);
         setError(`error: ${e}`);
       } finally {
         setIsLoading(false);

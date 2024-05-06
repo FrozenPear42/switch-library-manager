@@ -6,26 +6,50 @@ import {
 } from "@tabler/icons-react";
 import styles from "./Menu.module.css";
 import classNames from "classnames";
+import { Link } from "wouter";
 
 export default function Menu() {
   return (
     <div className={styles.menu}>
-      <a className={classNames(styles.menuItem, styles.active)}>
+      <Link
+        to="/library"
+        className={(isActive) =>
+          classNames(styles.menuItem, isActive && styles.active)
+        }
+      >
         <IconLibrary />
-        <label>Library</label>
-      </a>
-      <a className={styles.menuItem}>
+        <span>Library</span>
+      </Link>
+
+      <Link
+        to="/catalog"
+        className={(isActive) =>
+          classNames(styles.menuItem, isActive && styles.active)
+        }
+      >
         <IconDatabase />
-        <label>Catalog</label>
-      </a>
-      <a className={styles.menuItem}>
+        <span>Catalog</span>
+      </Link>
+
+      <Link
+        to="/nut"
+        className={(isActive) =>
+          classNames(styles.menuItem, isActive && styles.active)
+        }
+      >
         <IconNut />
-        <label>NUT</label>
-      </a>
-      <a className={styles.menuItem}>
+        <span>NUT</span>
+      </Link>
+
+      <Link
+        to="/settings"
+        className={(isActive) =>
+          classNames(styles.menuItem, isActive && styles.active)
+        }
+      >
         <IconSettings />
-        <label>Settings</label>
-      </a>
+        <span>Settings</span>
+      </Link>
     </div>
   );
 }

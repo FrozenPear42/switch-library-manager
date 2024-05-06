@@ -2,6 +2,7 @@ import { IconCheck, IconCross, IconX } from "@tabler/icons-react";
 import { main } from "../../../wailsjs/go/models";
 import styles from "./CatalogGameCard.module.css";
 import classNames from "classnames";
+import Collapsible from "../../components/Collapsible/Collapsible";
 
 function LibraryIndicator({ inLibrary }: { inLibrary: boolean }) {
   return (
@@ -78,11 +79,23 @@ export function CatalogGameCard({ data }: { data: main.SwitchTitle }) {
           <>
             <div className={styles.spacer}></div>
             <div>{data.dlcs.length} DLCs available </div>
-            <div className={styles.dlcList}>
-              {data.dlcs.map((dlc) => (
-                <DLCCard data={dlc} key={dlc.titleID} />
-              ))}
-            </div>
+            {data.dlcs.length > 1 ? (
+              <Collapsible
+                startOpened={false}
+                openText="Show all..."
+                closeText="Hide"
+              >
+                <div className={styles.dlcList}>
+                  {data.dlcs.map((dlc) => (
+                    <DLCCard data={dlc} key={dlc.titleID} />
+                  ))}
+                </div>
+              </Collapsible>
+            ) : (
+              <div className={styles.dlcList}>
+                <DLCCard data={data.dlcs[0]} />
+              </div>
+            )}
           </>
         )}
       </div>
