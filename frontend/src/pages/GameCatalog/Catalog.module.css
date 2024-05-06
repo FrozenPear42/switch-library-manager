@@ -2,6 +2,6 @@
   display: grid;
   gap: 2rem;
   margin-block: 1rem;
-  grid-template-columns: repeat(3, 400px);
+  grid-template-columns: repeat(auto-fit, 25rem);
   justify-content: center;
 }

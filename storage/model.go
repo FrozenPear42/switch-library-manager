@@ -15,11 +15,16 @@ type CatalogEntryData struct {
 	Intro       string
 	Region      string
 	Key         string
+	ReleaseDate string
+	Publisher   string
+	IsDemo      bool
+	Screenshots []string
 }
 
 type CatalogEntryRecentUpdate struct {
 	ID      string
 	Version int
+	Key     string
 }
 
 type CatalogEntryVersion struct {

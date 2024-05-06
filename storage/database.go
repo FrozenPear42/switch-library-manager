@@ -89,8 +89,11 @@ func (d *Database) GetCatalogEntryByID(id string) (CatalogEntry, bool, error) {
 }
 
 func (d *Database) GetCatalogEntries(filters any, pageSize int, cursor int) ([]CatalogEntry, error) {
+	q := &bolthold.Query{}
+	q = q.Skip(cursor).Limit(pageSize)
+
 	var entries []CatalogEntry
-	err := d.db.Find(&entries, nil)
+	err := d.db.Find(&entries, q)
 	if err != nil {
 		return nil, err
 	}

@@ -20,8 +20,8 @@ func main() {
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:  "Switch Library Manager",
-		Width:  1280,
-		Height: 1024,
+		Width:  1480,
+		Height: 768,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

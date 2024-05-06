@@ -14,8 +14,9 @@ export default function Catalog() {
       </div>
       <div className={styles.gameList}>
         {data
-          .slice(0, 100)
           .filter((e) => e.titleID != "" && e.name != "")
+          // .filter((e) => e.versions.length > 0)
+          .slice(0, 100)
           .map((e) => {
             return <CatalogGameCard data={e} key={e.titleID} />;
           })}

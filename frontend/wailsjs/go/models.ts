@@ -20,13 +20,14 @@ export namespace main {
 	    icon: string;
 	    banner: string;
 	    region: string;
-	    releaseDate: number;
+	    releaseDate: string;
 	    version: string;
 	    description: string;
 	    intro: string;
 	    publisher: string;
 	    inLibrary: boolean;
-	    DLCs: SwitchTitle[];
+	    screenshots: string[];
+	    dlcs: SwitchTitle[];
 	    versions: SwitchTitleVersion[];
 	
 	    static createFrom(source: any = {}) {
@@ -46,7 +47,8 @@ export namespace main {
 	        this.intro = source["intro"];
 	        this.publisher = source["publisher"];
 	        this.inLibrary = source["inLibrary"];
-	        this.DLCs = this.convertValues(source["DLCs"], SwitchTitle);
+	        this.screenshots = source["screenshots"];
+	        this.dlcs = this.convertValues(source["dlcs"], SwitchTitle);
 	        this.versions = this.convertValues(source["versions"], SwitchTitleVersion);
 	    }
 	

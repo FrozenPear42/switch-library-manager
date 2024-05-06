@@ -160,7 +160,7 @@ func parseCatalogFiles(titlesFile, versionsFile io.Reader) (map[string]storage.C
 		// Updates    ends with 800
 		// Dlc        a running counter (starting with 001) in the 4 last chars
 
-		mainTitleId := id[:len(id)-3] + "000"
+		mainTitleId := id[:len(id)-4] + "xxxx"
 
 		if _, ok := entries[mainTitleId]; !ok {
 			entries[mainTitleId] = storage.CatalogEntry{}
@@ -180,9 +180,13 @@ func parseCatalogFiles(titlesFile, versionsFile io.Reader) (map[string]storage.C
 				Intro:       data.Intro,
 				Region:      data.Region,
 				Key:         data.Key,
+				ReleaseDate: parseReleaseDate(data.ReleaseDate),
+				Publisher:   data.Publisher,
+				IsDemo:      data.IsDemo,
+				Screenshots: data.Screenshots,
 			}
 			var vs []storage.CatalogEntryVersion
-			for versionNumberStr, releaseDate := range versionsData[mainTitleId] {
+			for versionNumberStr, releaseDate := range versionsData[id[:len(id)-3]+"000"] {
 				versionNumber, err := strconv.Atoi(versionNumberStr)
 				if err != nil {
 					continue
@@ -205,6 +209,7 @@ func parseCatalogFiles(titlesFile, versionsFile io.Reader) (map[string]storage.C
 			entry.RecentUpdate = storage.CatalogEntryRecentUpdate{
 				ID:      id,
 				Version: int(v),
+				Key:     data.Key,
 			}
 		} else {
 			// dlc
@@ -219,6 +224,9 @@ func parseCatalogFiles(titlesFile, versionsFile io.Reader) (map[string]storage.C
 					Intro:       data.Intro,
 					Region:      data.Region,
 					Key:         data.Key,
+					ReleaseDate: parseReleaseDate(data.ReleaseDate),
+					Publisher:   data.Publisher,
+					Screenshots: data.Screenshots,
 				},
 			})
 		}
@@ -274,4 +282,16 @@ func downloadFileWithEtag(url string, path string, etag string) (*os.File, strin
 	}
 
 	return f, newEtag, nil
+}
+
+func parseReleaseDate(date int) string {
+	year := date / 1_00_00
+	yearR := date % 1_00_00
+	month := yearR / 1_00
+	day := yearR % 1_00
+
+	if year == 0 || month == 0 || day == 0 {
+		return ""
+	}
+	return fmt.Sprintf("%d-%02d-%02d", year, month, day)
 }

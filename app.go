@@ -13,6 +13,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.uber.org/zap"
 	"path/filepath"
+	"sync"
 )
 
 type SwitchTitle struct {
@@ -21,13 +22,14 @@ type SwitchTitle struct {
 	Icon        string               `json:"icon"`
 	Banner      string               `json:"banner"`
 	Region      string               `json:"region"`
-	ReleaseDate int                  `json:"releaseDate"`
+	ReleaseDate string               `json:"releaseDate"`
 	Version     string               `json:"version"`
 	Description string               `json:"description"`
 	Intro       string               `json:"intro"`
 	Publisher   string               `json:"publisher"`
 	InLibrary   bool                 `json:"inLibrary"`
-	DLCs        []SwitchTitle        `json:"DLCs"`
+	Screenshots []string             `json:"screenshots"`
+	DLCs        []SwitchTitle        `json:"dlcs"`
 	Versions    []SwitchTitleVersion `json:"versions"`
 }
 
@@ -60,6 +62,7 @@ const (
 
 // App struct
 type App struct {
+	mutex              sync.Mutex
 	ctx                context.Context
 	sugarLogger        *zap.SugaredLogger
 	fullDB             storage.SwitchDatabase
@@ -70,7 +73,9 @@ type App struct {
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{}
+	return &App{
+		mutex: sync.Mutex{},
+	}
 }
 
 func (a *App) startup(ctx context.Context) {
@@ -176,6 +181,8 @@ func (a *App) RequestStartupProgress() {
 }
 
 func (a *App) LoadCatalog() ([]SwitchTitle, error) {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
 	var result []SwitchTitle
 	entries, err := a.fullDB.GetCatalogEntries(nil, 0, 0)
 	if err != nil {
@@ -194,11 +201,11 @@ func (a *App) LoadCatalog() ([]SwitchTitle, error) {
 				Version:     dlc.Version,
 				Description: dlc.Description,
 				Intro:       dlc.Intro,
-
+				Publisher:   dlc.Publisher,
+				ReleaseDate: dlc.ReleaseDate,
+				Screenshots: dlc.Screenshots,
 				// TODO: update
-				Publisher:   "",
-				ReleaseDate: 0,
-				InLibrary:   false,
+				InLibrary: false,
 			})
 		}
 
@@ -219,10 +226,11 @@ func (a *App) LoadCatalog() ([]SwitchTitle, error) {
 			Version:     entry.Version,
 			Description: entry.Description,
 			Intro:       entry.Intro,
+			ReleaseDate: entry.ReleaseDate,
+			Publisher:   entry.Publisher,
+			Screenshots: entry.Screenshots,
 			// TODO: update
-			ReleaseDate: 0,
-			Publisher:   "",
-			InLibrary:   false,
+			InLibrary: false,
 
 			DLCs:     dlcs,
 			Versions: versions,

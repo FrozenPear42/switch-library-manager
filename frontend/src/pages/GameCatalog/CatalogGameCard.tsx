@@ -3,6 +3,45 @@ import { main } from "../../../wailsjs/go/models";
 import styles from "./CatalogGameCard.module.css";
 import classNames from "classnames";
 
+function LibraryIndicator({ inLibrary }: { inLibrary: boolean }) {
+  return (
+    <div
+      className={classNames(
+        styles.libraryInfo,
+        inLibrary ? styles.success : styles.fail
+      )}
+    >
+      {inLibrary ? (
+        <>
+          <IconCheck />
+          <span>In the Library</span>
+        </>
+      ) : (
+        <>
+          <IconX />
+          <span>Not in the Library</span>
+        </>
+      )}
+    </div>
+  );
+}
+
+function DLCCard({ data }: { data: main.SwitchTitle }) {
+  return (
+    <div className={styles.dlcCard}>
+      <img src={data.banner} className={styles.dlcBanner} />
+      <div className={styles.dlcDetails}>
+        <div>{data.name}</div>
+        <div>
+          {data.titleID}{" "}
+          <span className={styles.additionalInfo}>({data.region})</span>
+        </div>
+        <LibraryIndicator inLibrary={data.inLibrary}></LibraryIndicator>
+      </div>
+    </div>
+  );
+}
+
 export function CatalogGameCard({ data }: { data: main.SwitchTitle }) {
   const lastUpdate =
     data.versions.length > 0
@@ -30,52 +69,22 @@ export function CatalogGameCard({ data }: { data: main.SwitchTitle }) {
                 ({lastUpdate.releaseDate})
               </span>
             </div>
-            <div
-              className={classNames(
-                styles.libraryInfo,
-                data.inLibrary ? styles.success : styles.fail
-              )}
-            >
-              {data.inLibrary ? (
-                <>
-                  <IconCheck />
-                  In Library
-                </>
-              ) : (
-                <>
-                  <IconX />
-                  Not in Library
-                </>
-              )}
-            </div>
+            <LibraryIndicator inLibrary={data.inLibrary}></LibraryIndicator>
           </div>
         </div>
         <div>{data.intro}</div>
         {/* <div>{data.description}</div> */}
-        <div>
-          {data.DLCs.length} DLCs...
-          {data.DLCs.map((dlc) => (
-            <div key={dlc.titleID}>
-              <div>
-                DLC:
-                {dlc.name} {dlc.version} {dlc.region} {dlc.titleID} {dlc.intro}{" "}
-                {dlc.description}
-              </div>
-              {/* <img src={dlc.banner} height={100} />
-              <img src={dlc.icon} height={100} /> */}
+        {data.dlcs.length > 0 && (
+          <>
+            <div className={styles.spacer}></div>
+            <div>{data.dlcs.length} DLCs available </div>
+            <div className={styles.dlcList}>
+              {data.dlcs.map((dlc) => (
+                <DLCCard data={dlc} key={dlc.titleID} />
+              ))}
             </div>
-          ))}
-        </div>
-        <div>
-          {data.versions.length + 1} versions...
-          {data.versions.map((version) => (
-            <div key={version.version}>
-              <div>
-                {version.version} {version.releaseDate}
-              </div>
-            </div>
-          ))}
-        </div>
+          </>
+        )}
       </div>
     </div>
   );
