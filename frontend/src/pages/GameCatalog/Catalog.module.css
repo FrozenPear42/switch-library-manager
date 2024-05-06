@@ -1,0 +1,7 @@
+.gameList {
+  display: grid;
+  gap: 2rem;
+  margin-block: 1rem;
+  grid-template-columns: repeat(3, 400px);
+  justify-content: center;
+}

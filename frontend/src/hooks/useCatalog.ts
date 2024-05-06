@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-// import { LoadCatalog } from "../../wailsjs/go/main/App";
+import { LoadCatalog } from "../../wailsjs/go/main/App";
 import { main } from "../../wailsjs/go/models";
 
 export type CatalogFilters = {
@@ -20,7 +20,14 @@ export const useCatalog = (filters?: CatalogFilters): HookReturnType => {
   useEffect(() => {
     const fetch = async () => {
       setIsLoading(true);
-      // const catalog = await LoadCatalog();
+      try {
+        const catalog = await LoadCatalog();
+        setData(catalog);
+      } catch (e) {
+        setError(`error: ${e}`);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetch();
   }, [filters]);
