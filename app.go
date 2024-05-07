@@ -38,6 +38,24 @@ type SwitchTitleVersion struct {
 	ReleaseDate string `json:"releaseDate"`
 }
 
+type CatalogFiltersSortBy string
+
+type CatalogFilters struct {
+	SortBy storage.CatalogFiltersSortBy `json:"sortBy"`
+	Name   *string                      `json:"name"`
+	ID     *string                      `json:"id"`
+	Region []string                     `json:"region"`
+	Cursor int                          `json:"cursor"`
+	Limit  int                          `json:"limit"`
+}
+
+type CatalogPage struct {
+	Titles      []SwitchTitle `json:"titles"`
+	TotalTitles int           `json:"totalTitles"`
+	NextCursor  int           `json:"nextCursor"`
+	IsLastPage  bool          `json:"isLastPage"`
+}
+
 type OrganizeSettings struct {
 }
 
@@ -180,16 +198,22 @@ func (a *App) RequestStartupProgress() {
 	runtime.EventsEmit(a.ctx, string(EventTypeStartupProgress), a.recentStartupEvent)
 }
 
-func (a *App) LoadCatalog() ([]SwitchTitle, error) {
-	a.mutex.Lock()
-	defer a.mutex.Unlock()
+func (a *App) LoadCatalog(filters CatalogFilters) (CatalogPage, error) {
+	a.sugarLogger.Infof("load catalog request %v", filters)
+
 	var result []SwitchTitle
-	entries, err := a.fullDB.GetCatalogEntries(nil, 0, 0)
+	catalogFilters := &storage.CatalogFilters{
+		SortBy: filters.SortBy,
+		Name:   filters.Name,
+		ID:     filters.ID,
+		Region: filters.Region,
+	}
+	page, err := a.fullDB.GetCatalogEntries(catalogFilters, filters.Limit, filters.Cursor)
 	if err != nil {
-		return nil, err
+		return CatalogPage{}, err
 	}
 
-	for _, entry := range entries {
+	for _, entry := range page.Data {
 		dlcs := make([]SwitchTitle, 0, len(entry.DLCs))
 		for _, dlc := range entry.DLCs {
 			dlcs = append(dlcs, SwitchTitle{
@@ -237,7 +261,12 @@ func (a *App) LoadCatalog() ([]SwitchTitle, error) {
 		})
 	}
 	a.sugarLogger.Infof("loading catalog of %v items to frontend", len(result))
-	return result, nil
+	return CatalogPage{
+		Titles:      result,
+		TotalTitles: page.TotalCount,
+		NextCursor:  page.NextCursor,
+		IsLastPage:  page.IsLastPage,
+	}, nil
 }
 
 //func (a *App) OrganizeLibrary() {

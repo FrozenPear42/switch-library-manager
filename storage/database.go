@@ -16,7 +16,7 @@ type SwitchDatabaseCatalog interface {
 
 	AddCatalogEntries(entries map[string]CatalogEntry) error
 	GetCatalogEntryByID(id string) (CatalogEntry, bool, error)
-	GetCatalogEntries(filters any, pageSize int, cursor int) ([]CatalogEntry, error)
+	GetCatalogEntries(filters *CatalogFilters, pageSize int, cursor int) (Page[CatalogEntry], error)
 	ClearCatalog() error
 }
 
@@ -88,16 +88,37 @@ func (d *Database) GetCatalogEntryByID(id string) (CatalogEntry, bool, error) {
 	panic("implement me")
 }
 
-func (d *Database) GetCatalogEntries(filters any, pageSize int, cursor int) ([]CatalogEntry, error) {
+func (d *Database) GetCatalogEntries(filters *CatalogFilters, pageSize int, cursor int) (Page[CatalogEntry], error) {
 	q := &bolthold.Query{}
 	q = q.Skip(cursor).Limit(pageSize)
+
+	if filters != nil {
+		switch filters.SortBy {
+		case CatalogFiltersSortByID:
+			q.SortBy("ID")
+		case CatalogFiltersSortByName:
+			q.SortBy("Name")
+		}
+	}
 
 	var entries []CatalogEntry
 	err := d.db.Find(&entries, q)
 	if err != nil {
-		return nil, err
+		return Page[CatalogEntry]{}, err
 	}
-	return entries, nil
+
+	count, err := d.db.Count(&CatalogEntry{}, nil)
+	if err != nil {
+		return Page[CatalogEntry]{}, err
+	}
+
+	nextCursor := cursor + pageSize + 1
+	return Page[CatalogEntry]{
+		Data:       entries,
+		NextCursor: nextCursor,
+		TotalCount: count,
+		IsLastPage: nextCursor > count,
+	}, nil
 }
 
 func (d *Database) ClearCatalog() error {

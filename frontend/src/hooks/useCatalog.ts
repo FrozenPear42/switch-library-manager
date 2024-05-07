@@ -1,37 +1,29 @@
 import { useEffect, useState } from "react";
 import { LoadCatalog } from "../../wailsjs/go/main/App";
 import { main } from "../../wailsjs/go/models";
+import { useQuery } from "react-query";
 
 export type CatalogFilters = {
   name: string | null;
 };
 
 type HookReturnType = {
-  data: main.SwitchTitle[];
+  data: main.CatalogPage | undefined;
   isLoading: boolean;
-  error: string | null;
+  error: unknown;
 };
 
 export const useCatalog = (filters?: CatalogFilters): HookReturnType => {
-  const [data, setData] = useState<main.SwitchTitle[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetch = async () => {
-      setIsLoading(true);
-      try {
-        const catalog = await LoadCatalog();
-        setData(catalog);
-      } catch (e) {
-        console.error(e);
-        setError(`error: ${e}`);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetch();
-  }, [filters]);
+  const { data, isLoading, error } = useQuery(
+    ["catalog", filters],
+    async () =>
+      await LoadCatalog({
+        cursor: 100,
+        limit: 100,
+        region: [],
+        sortBy: "name",
+      })
+  );
 
   return {
     data,

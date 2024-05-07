@@ -10,10 +10,11 @@ export default function Catalog() {
     <div>
       <div>Filters</div>
       <div>
-        {isLoading && "loading"} {error}
+        {isLoading && "loading"} {`${error}`}
       </div>
+
       <div className={styles.gameList}>
-        {data
+        {data?.titles
           .filter((e) => e.titleID != "" && e.name != "")
           // .filter((e) => e.versions.length > 0)
           .slice(0, 100)

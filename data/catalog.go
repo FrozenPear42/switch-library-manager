@@ -232,6 +232,11 @@ func parseCatalogFiles(titlesFile, versionsFile io.Reader) (map[string]storage.C
 		}
 		entries[mainTitleId] = entry
 	}
+	for k, v := range entries {
+		if v.ID == "" || v.Name == "" {
+			delete(entries, k)
+		}
+	}
 	return entries, nil
 }
 

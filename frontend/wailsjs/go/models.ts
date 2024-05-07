@@ -1,5 +1,27 @@
 export namespace main {
 	
+	export class CatalogFilters {
+	    sortBy: string;
+	    name?: string;
+	    id?: string;
+	    region: string[];
+	    cursor: number;
+	    limit: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new CatalogFilters(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.sortBy = source["sortBy"];
+	        this.name = source["name"];
+	        this.id = source["id"];
+	        this.region = source["region"];
+	        this.cursor = source["cursor"];
+	        this.limit = source["limit"];
+	    }
+	}
 	export class SwitchTitleVersion {
 	    version: number;
 	    releaseDate: string;
@@ -70,6 +92,43 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class CatalogPage {
+	    titles: SwitchTitle[];
+	    totalTitles: number;
+	    nextCursor: number;
+	    isLastPage: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new CatalogPage(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.titles = this.convertValues(source["titles"], SwitchTitle);
+	        this.totalTitles = source["totalTitles"];
+	        this.nextCursor = source["nextCursor"];
+	        this.isLastPage = source["isLastPage"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	
 
 }
 

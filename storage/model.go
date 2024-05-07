@@ -43,3 +43,24 @@ type CatalogEntry struct {
 	Versions     []CatalogEntryVersion
 	DLCs         []CatalogEntryDLC
 }
+
+type CatalogFiltersSortBy string
+
+const (
+	CatalogFiltersSortByName CatalogFiltersSortBy = "name"
+	CatalogFiltersSortByID   CatalogFiltersSortBy = "id"
+)
+
+type CatalogFilters struct {
+	SortBy CatalogFiltersSortBy
+	Name   *string
+	ID     *string
+	Region []string
+}
+
+type Page[DataType any] struct {
+	Data       []DataType
+	NextCursor int
+	TotalCount int
+	IsLastPage bool
+}
