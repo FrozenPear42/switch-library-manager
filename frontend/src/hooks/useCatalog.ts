@@ -13,16 +13,21 @@ type HookReturnType = {
   error: unknown;
 };
 
-export const useCatalog = (filters?: CatalogFilters): HookReturnType => {
+export const useCatalog = (
+  page: number,
+  pageSize: number,
+  filters?: CatalogFilters
+): HookReturnType => {
   const { data, isLoading, error } = useQuery(
-    ["catalog", filters],
+    ["catalog", filters, page, pageSize],
     async () =>
       await LoadCatalog({
-        cursor: 100,
-        limit: 100,
+        cursor: page * pageSize,
+        limit: pageSize,
         region: [],
         sortBy: "name",
-      })
+      }),
+    { keepPreviousData: true }
   );
 
   return {

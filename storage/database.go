@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"github.com/timshannon/bolthold"
 	"go.etcd.io/bbolt"
+	"golang.org/x/exp/slices"
+	"strings"
+	"sync"
 )
 
 type SwitchDatabaseLocal interface {
@@ -25,8 +28,11 @@ type SwitchDatabase interface {
 }
 
 type Database struct {
-	path string
-	db   *bolthold.Store
+	path   string
+	db     *bolthold.Store
+	data   []CatalogEntry
+	loaded bool
+	mutex  sync.Mutex
 }
 
 func NewDatabase(path string) (*Database, error) {
@@ -37,7 +43,11 @@ func NewDatabase(path string) (*Database, error) {
 		return nil, fmt.Errorf("could not open database: %w", err)
 	}
 	return &Database{
-		db: db,
+		path:   path,
+		db:     db,
+		data:   make([]CatalogEntry, 0),
+		loaded: false,
+		mutex:  sync.Mutex{},
 	}, nil
 }
 
@@ -89,32 +99,69 @@ func (d *Database) GetCatalogEntryByID(id string) (CatalogEntry, bool, error) {
 }
 
 func (d *Database) GetCatalogEntries(filters *CatalogFilters, pageSize int, cursor int) (Page[CatalogEntry], error) {
-	q := &bolthold.Query{}
-	q = q.Skip(cursor).Limit(pageSize)
+	// FIXME: bolthold is terrible, it basically loads entire database into memory then filters and limits it.
+	// for now let's keep it as in memory DB
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+
+	if !d.loaded {
+		err := d.db.Find(&d.data, nil)
+		if err != nil {
+			return Page[CatalogEntry]{}, err
+		}
+		d.loaded = true
+	}
 
 	if filters != nil {
 		switch filters.SortBy {
 		case CatalogFiltersSortByID:
-			q.SortBy("ID")
+			slices.SortFunc(d.data, func(a, b CatalogEntry) int {
+				return strings.Compare(a.ID, b.ID)
+			})
 		case CatalogFiltersSortByName:
-			q.SortBy("Name")
+			slices.SortFunc(d.data, func(a, b CatalogEntry) int {
+				return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
+			})
 		}
 	}
 
 	var entries []CatalogEntry
-	err := d.db.Find(&entries, q)
-	if err != nil {
-		return Page[CatalogEntry]{}, err
+
+	if filters != nil {
+		for _, entry := range d.data {
+			valid := true
+			if filters.Name != nil {
+				valid = valid && strings.Contains(strings.ToLower(entry.Name), strings.ToLower(*filters.Name))
+			}
+			if filters.ID != nil {
+				valid = valid && strings.HasPrefix(strings.ToLower(entry.ID), strings.ToLower(*filters.ID))
+			}
+			if len(filters.Region) > 0 {
+				valid = valid && slices.ContainsFunc(filters.Region, func(s string) bool {
+					return strings.ToLower(s) == strings.ToLower(entry.Region)
+				})
+			}
+
+			if valid {
+				entries = append(entries, entry)
+			}
+		}
+	} else {
+		entries = d.data
 	}
 
-	count, err := d.db.Count(&CatalogEntry{}, nil)
-	if err != nil {
-		return Page[CatalogEntry]{}, err
-	}
+	count := len(entries)
 
+	var data []CatalogEntry
+	if cursor > len(entries) {
+		data = []CatalogEntry{}
+	} else {
+		data = entries[max(0, cursor):min(cursor+pageSize, len(entries))]
+	}
 	nextCursor := cursor + pageSize + 1
+
 	return Page[CatalogEntry]{
-		Data:       entries,
+		Data:       data,
 		NextCursor: nextCursor,
 		TotalCount: count,
 		IsLastPage: nextCursor > count,
@@ -127,4 +174,18 @@ func (d *Database) ClearCatalog() error {
 		return err
 	}
 	return nil
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
