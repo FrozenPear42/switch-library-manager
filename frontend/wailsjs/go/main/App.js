@@ -6,6 +6,10 @@ export function LoadCatalog(arg1) {
   return window['go']['main']['App']['LoadCatalog'](arg1);
 }
 
+export function LoadLibraryFiles() {
+  return window['go']['main']['App']['LoadLibraryFiles']();
+}
+
 export function RequestStartupProgress() {
   return window['go']['main']['App']['RequestStartupProgress']();
 }

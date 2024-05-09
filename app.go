@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/FrozenPear42/switch-library-manager/data"
-	"github.com/FrozenPear42/switch-library-manager/db"
 	"github.com/FrozenPear42/switch-library-manager/keys"
 	"github.com/FrozenPear42/switch-library-manager/settings"
 	"github.com/FrozenPear42/switch-library-manager/storage"
@@ -84,8 +83,8 @@ type App struct {
 	ctx                context.Context
 	sugarLogger        *zap.SugaredLogger
 	fullDB             storage.SwitchDatabase
-	localDbManager     *db.LocalSwitchDBManager
 	configProvider     settings.ConfigurationProvider
+	libraryManager     data.LibraryManager
 	recentStartupEvent EventMessage
 }
 
@@ -118,11 +117,11 @@ func (a *App) startup(ctx context.Context) {
 			err = configurationProvider.SaveToFile()
 			if err != nil {
 				fmt.Println("Could not save new configuration file. Aborting.")
-				return
+				runtime.Quit(a.ctx)
 			}
 		} else {
 			fmt.Printf("Failed to load configuration file. Aborting. (%v)\n", err)
-			return
+			runtime.Quit(a.ctx)
 		}
 	}
 
@@ -151,19 +150,35 @@ func (a *App) startup(ctx context.Context) {
 	err = keyProvider.LoadFromFile(keyPaths)
 	if err != nil {
 		sugar.Error("Failed to initialize keys\n", err)
-		return
+		runtime.Quit(a.ctx)
 	}
+
+	libraryManager := data.NewLibraryManager(logger.Sugar(), keyProvider, config.ScanDirectories)
 
 	a.fullDB = database
 	a.configProvider = configurationProvider
 	a.sugarLogger = logger.Sugar()
+	a.libraryManager = libraryManager
 
+	a.sugarLogger.Infof("startup")
+
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
 	err = a.initializeSwitchDB()
 	if err != nil {
 		sugar.Error("Failed to initialize database\n", err)
 		runtime.Quit(a.ctx)
 	}
 
+	err = a.libraryManager.Rescan(false, func(current, total int, message string) {
+		sugar.Debugf("processing: %v/%v, %v", current, total, message)
+	})
+	if err != nil {
+		sugar.Error("Failed to init scan files\n", err)
+		runtime.Quit(a.ctx)
+	}
+
+	a.sugarLogger.Infof("initialized")
 }
 
 func (a *App) initializeSwitchDB() error {
@@ -268,6 +283,46 @@ func (a *App) LoadCatalog(filters CatalogFilters) (CatalogPage, error) {
 		IsLastPage:  page.IsLastPage,
 	}, nil
 }
+
+type LibraryFileEntry struct {
+	FilePath string `json:"filePath"`
+	FileSize int    `json:"fileSize"`
+}
+
+func (a *App) LoadLibraryFiles() ([]LibraryFileEntry, error) {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+	fmt.Println(a)
+	fmt.Println(a.libraryManager)
+	fmt.Println(a.sugarLogger)
+	a.sugarLogger.Debugf("manager: %v", a.libraryManager)
+	entries, err := a.libraryManager.GetEntries()
+	if err != nil {
+		return nil, err
+	}
+	var res []LibraryFileEntry
+	for _, e := range entries {
+		res = append(res, LibraryFileEntry{
+			FilePath: e.FilePath,
+			FileSize: e.FileSize,
+		})
+	}
+	return res, nil
+}
+
+//type LibraryGameEntry struct {
+//	TitleID string
+//	Name string
+//
+//}
+
+//func (a *App) LoadLibraryGames() ([]data.LibraryFileEntry, error) {
+//	files, err :=  a.libraryManager.GetEntries()
+//
+//	for _, fileEntry := range files {
+//
+//	}
+//}
 
 //func (a *App) OrganizeLibrary() {
 //	//folderToScan := settings.ReadSettings(g.baseFolder).AppDataDirectory

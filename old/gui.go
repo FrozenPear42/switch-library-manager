@@ -3,13 +3,9 @@ package old
 //
 //import (
 //	"encoding/json"
-//	"errors"
-//	"github.com/asticode/go-astilectron"
 //	"github.com/FrozenPear42/switch-library-manager/db"
-//	"github.com/FrozenPear42/switch-library-manager/settings"
 //	"path/filepath"
 //	"strconv"
-//	"sync"
 //)
 //
 //type Pair struct {
@@ -49,8 +45,6 @@ package old
 //	Total   int    `json:"total"`
 //	Message string `json:"message"`
 //}
-//
-//
 //
 //func (g *GUI) handleMessage(m *astilectron.EventMessage) interface{} {
 //	var retValue string
@@ -169,45 +163,4 @@ package old
 //		return ext[1:]
 //	}
 //	return ""
-//}
-//
-//func (g *GUI) saveSettings(settingsJson string) error {
-//	s := settings.AppSettings{}
-//	err := json.Unmarshal([]byte(settingsJson), &s)
-//	if err != nil {
-//		return err
-//	}
-//	settings.SaveSettings(&s, g.baseFolder)
-//	return nil
-//}
-//
-//func (g *GUI) loadSettings() string {
-//	return settings.ReadSettingsAsJSON(g.baseFolder)
-//}
-//
-//func (g *GUI) buildSwitchDb() (*db.SwitchTitlesDB, error) {
-//	settingsObj := settings.ReadSettings(g.baseFolder)
-//	//1. load the titles JSON object
-//	g.UpdateProgress(1, 4, "Downloading titles.json")
-//	filename := filepath.Join(g.baseFolder, settings.TITLE_JSON_FILENAME)
-//	titleFile, titlesEtag, err := db.LoadAndUpdateFile(settings.TITLES_JSON_URL, filename, settingsObj.TitlesEtag)
-//	if err != nil {
-//		return nil, errors.New("failed to download switch titles [reason:" + err.Error() + "]")
-//	}
-//	settingsObj.TitlesEtag = titlesEtag
-//
-//	g.UpdateProgress(2, 4, "Downloading versions.json")
-//	filename = filepath.Join(g.baseFolder, settings.VERSIONS_JSON_FILENAME)
-//	versionsFile, versionsEtag, err := db.LoadAndUpdateFile(settings.VERSIONS_JSON_URL, filename, settingsObj.VersionsEtag)
-//	if err != nil {
-//		return nil, errors.New("failed to download switch updates [reason:" + err.Error() + "]")
-//	}
-//	settingsObj.VersionsEtag = versionsEtag
-//
-//	settings.SaveSettings(settingsObj, g.baseFolder)
-//
-//	g.UpdateProgress(3, 4, "Processing switch titles and updates ...")
-//	switchTitleDB, err := db.CreateSwitchTitleDB(titleFile, versionsFile)
-//	g.UpdateProgress(4, 4, "Finishing up...")
-//	return switchTitleDB, err
 //}

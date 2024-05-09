@@ -46,7 +46,6 @@ func ReadPfs0File(filePath string) (*PFS0, error) {
 }
 
 func readPfs0(reader io.ReaderAt, offset int64) (*PFS0, error) {
-
 	header := make([]byte, 0xC)
 	n, err := reader.ReadAt(header, offset)
 	if err != nil {

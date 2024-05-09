@@ -45,8 +45,6 @@ type versionsJsonEntry map[string]string
 
 type versionsJson map[string]versionsJsonEntry
 
-type ProgressCallback func(current, total int, message string)
-
 const (
 	dialTimeout = 3 * time.Second
 )

@@ -6,6 +6,7 @@ import LoadingPanel from "./components/LoadingPanel/LoadingPanel";
 import Menu from "./components/Menu/Menu";
 import Catalog from "./pages/GameCatalog/Catalog";
 import Library from "./pages/Library/Library";
+import Files from "./pages/Files/Files";
 
 export default function App() {
   return (
@@ -23,6 +24,9 @@ export default function App() {
           </Route>
           <Route path="/library">
             <Library />
+          </Route>
+          <Route path="/files">
+            <Files />
           </Route>
           <Route path="/nut">NUT</Route>
           <Route path="/settings">Settings</Route>

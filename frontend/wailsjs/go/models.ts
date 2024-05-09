@@ -128,6 +128,20 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class LibraryFileEntry {
+	    filePath: string;
+	    fileSize: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new LibraryFileEntry(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.filePath = source["filePath"];
+	        this.fileSize = source["fileSize"];
+	    }
+	}
 	
 
 }

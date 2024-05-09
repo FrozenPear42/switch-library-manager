@@ -4,4 +4,6 @@ import {main} from '../models';
 
 export function LoadCatalog(arg1:main.CatalogFilters):Promise<main.CatalogPage>;
 
+export function LoadLibraryFiles():Promise<Array<main.LibraryFileEntry>>;
+
 export function RequestStartupProgress():Promise<void>;

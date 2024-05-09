@@ -1,5 +1,6 @@
 import {
   IconDatabase,
+  IconFile,
   IconLibrary,
   IconNut,
   IconSettings,
@@ -19,6 +20,16 @@ export default function Menu() {
       >
         <IconLibrary />
         <span>Library</span>
+      </Link>
+
+      <Link
+        to="/files"
+        className={(isActive) =>
+          classNames(styles.menuItem, isActive && styles.active)
+        }
+      >
+        <IconFile />
+        <span>Files</span>
       </Link>
 
       <Link

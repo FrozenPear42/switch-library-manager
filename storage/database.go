@@ -10,7 +10,7 @@ import (
 	"sync"
 )
 
-type SwitchDatabaseLocal interface {
+type SwitchDatabaseLibrary interface {
 }
 
 type SwitchDatabaseCatalog interface {

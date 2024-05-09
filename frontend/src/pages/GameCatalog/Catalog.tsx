@@ -4,7 +4,7 @@ import { CatalogGameCard } from "./CatalogGameCard";
 import styles from "./Catalog.module.css";
 
 export default function Catalog() {
-  const { data, isLoading, error } = useCatalog();
+  const { data, isLoading, error } = useCatalog(0, 100);
 
   return (
     <div>

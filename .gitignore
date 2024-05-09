@@ -5,3 +5,5 @@ output
 build/bin
 node_modules
 frontend/dist
+
+fixtures

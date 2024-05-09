@@ -4,11 +4,11 @@ go 1.20
 
 require (
 	github.com/avast/retry-go v2.6.1+incompatible
-	github.com/boltdb/bolt v1.3.1
 	github.com/creasty/defaults v1.7.0
 	github.com/google/uuid v1.4.0
 	github.com/hashicorp/go-version v1.6.0
 	github.com/magiconair/properties v1.8.7
+	github.com/stretchr/testify v1.8.4
 	github.com/timshannon/bolthold v0.0.0-20240314194003-30aac6950928
 	github.com/wailsapp/wails/v2 v2.8.1
 	go.etcd.io/bbolt v1.3.9
@@ -49,4 +49,5 @@ require (
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

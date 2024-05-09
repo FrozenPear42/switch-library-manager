@@ -25,9 +25,7 @@ func ReadNspMetadata(keyProvider keys.KeysProvider, filePath string) (map[string
 	contentMap := map[string]*ContentMetaAttributes{}
 
 	for _, pfs0File := range pfs0.Files {
-
 		fileOffset := int64(pfs0File.StartOffset)
-
 		if strings.Contains(pfs0File.Name, "cnmt.nca") {
 			_, section, err := openMetaNcaDataSection(keyProvider, file, fileOffset)
 			if err != nil {
