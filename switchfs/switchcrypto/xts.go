@@ -1,3 +1,5 @@
+package switchcrypto
+
 /// Modified xts to support custom tweak
 
 // Copyright 2012 The Go Authors. All rights reserved.
@@ -23,7 +25,6 @@
 //
 // Note that XTS is usually not appropriate for any use besides disk encryption.
 // Most users should use an AEAD mode like GCM (from crypto/cipher.NewGCM) instead.
-package switchcrypto
 
 import (
 	"crypto/cipher"
