@@ -108,6 +108,12 @@ func (a *App) startup(ctx context.Context) {
 		runtime.Quit(a.ctx)
 	}
 
+	_, err = a.fullDB.GetCatalogEntries(nil, 1, 0)
+	if err != nil {
+		sugar.Error("Failed to initialize database\n", err)
+		runtime.Quit(a.ctx)
+	}
+
 	err = a.libraryManager.Rescan(false, func(current, total int, message string) {
 		sugar.Debugf("processing: %v/%v, %v", current, total, message)
 	})
@@ -236,6 +242,9 @@ func (a *App) LoadLibraryFiles() ([]LibraryFileEntry, error) {
 }
 
 func (a *App) LoadLibraryGames() ([]LibrarySwitchGame, error) {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+
 	fileEntries, err := a.libraryManager.GetEntries()
 	if err != nil {
 		return nil, fmt.Errorf("could not get file entries from library: %w", err)

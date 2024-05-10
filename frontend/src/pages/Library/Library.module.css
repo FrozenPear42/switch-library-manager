@@ -1,0 +1,8 @@
+.actions {
+  display: flex;
+}
+
+.gameGrid {
+  display: grid;
+  gap: 1rem;
+}
