@@ -10,6 +10,10 @@ export function LoadLibraryFiles() {
   return window['go']['main']['App']['LoadLibraryFiles']();
 }
 
+export function LoadLibraryGames() {
+  return window['go']['main']['App']['LoadLibraryGames']();
+}
+
 export function RequestStartupProgress() {
   return window['go']['main']['App']['RequestStartupProgress']();
 }

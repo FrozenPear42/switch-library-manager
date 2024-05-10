@@ -1,7 +1,6 @@
 package data
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/FrozenPear42/switch-library-manager/keys"
@@ -143,9 +142,6 @@ func (l *LibraryManagerImpl) Rescan(hardRescan bool, progressCallback ProgressCa
 		fileEntries = append(fileEntries, *fileEntry)
 	}
 
-	b, _ := json.Marshal(fileEntries)
-	l.logger.Debug(string(b))
-
 	//TODO:  store to DB instead
 	l.entries = fileEntries
 	return nil
@@ -277,9 +273,10 @@ func (l *LibraryManagerImpl) getGameMetadata(filePath, fileName, fileFormat stri
 	}
 
 	for _, entry := range metadata {
-		entryPrefix := entry.TitleId[:len(entry.TitleId)-4]
+		entryID := strings.ToUpper(entry.TitleId)
+		entryPrefix := entryID[:len(entryID)-4]
 
-		if strings.HasSuffix(entry.TitleId, "000") {
+		if strings.HasSuffix(entryID, "000") {
 			// base game
 			var name map[string]string
 			var isbn string
@@ -298,7 +295,7 @@ func (l *LibraryManagerImpl) getGameMetadata(filePath, fileName, fileFormat stri
 
 			result.BaseGames = append(result.BaseGames, SwitchFileGame{
 				IDPrefix:        entryPrefix,
-				ID:              entry.TitleId,
+				ID:              entryID,
 				Version:         entry.Version,
 				Name:            name,
 				ReadableVersion: readableVersion,
@@ -313,7 +310,7 @@ func (l *LibraryManagerImpl) getGameMetadata(filePath, fileName, fileFormat stri
 
 			result.Updates = append(result.Updates, SwitchFileUpdate{
 				ForIDPrefix:     entryPrefix,
-				ID:              entry.TitleId,
+				ID:              entryID,
 				Version:         entry.Version,
 				ReadableVersion: readableVersion,
 			})
@@ -322,7 +319,7 @@ func (l *LibraryManagerImpl) getGameMetadata(filePath, fileName, fileFormat stri
 			// DLC
 			result.DLCs = append(result.DLCs, SwitchFileDLC{
 				ForIDPrefix: entryPrefix,
-				ID:          entry.TitleId,
+				ID:          entryID,
 				Version:     entry.Version,
 			})
 		}

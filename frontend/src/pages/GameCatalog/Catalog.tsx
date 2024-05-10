@@ -14,7 +14,7 @@ export default function Catalog() {
       </div>
 
       <div className={styles.gameList}>
-        {data?.titles
+        {data?.games
           .filter((e) => e.titleID != "" && e.name != "")
           // .filter((e) => e.versions.length > 0)
           .slice(0, 100)

@@ -19,6 +19,7 @@ type SwitchDatabaseCatalog interface {
 
 	AddCatalogEntries(entries map[string]CatalogEntry) error
 	GetCatalogEntryByID(id string) (CatalogEntry, bool, error)
+	GetCatalogEntryByIDPrefix(idPrefix string) (CatalogEntry, error)
 	GetCatalogEntries(filters *CatalogFilters, pageSize int, cursor int) (Page[CatalogEntry], error)
 	ClearCatalog() error
 }
@@ -153,7 +154,9 @@ func (d *Database) GetCatalogEntries(filters *CatalogFilters, pageSize int, curs
 	count := len(entries)
 
 	var data []CatalogEntry
-	if cursor > len(entries) {
+	if pageSize == 0 {
+		data = entries
+	} else if cursor > len(entries) {
 		data = []CatalogEntry{}
 	} else {
 		data = entries[max(0, cursor):min(cursor+pageSize, len(entries))]
@@ -166,6 +169,16 @@ func (d *Database) GetCatalogEntries(filters *CatalogFilters, pageSize int, curs
 		TotalCount: count,
 		IsLastPage: nextCursor > count,
 	}, nil
+}
+
+func (d *Database) GetCatalogEntryByIDPrefix(idPrefix string) (CatalogEntry, error) {
+	idx := slices.IndexFunc(d.data, func(entry CatalogEntry) bool {
+		return strings.HasPrefix(strings.ToLower(entry.ID), strings.ToLower(idPrefix))
+	})
+	if idx == -1 {
+		return CatalogEntry{}, fmt.Errorf("not found")
+	}
+	return d.data[idx], nil
 }
 
 func (d *Database) ClearCatalog() error {

@@ -15,68 +15,6 @@ import (
 	"sync"
 )
 
-type SwitchTitle struct {
-	Name        string               `json:"name"`
-	TitleID     string               `json:"titleID"`
-	Icon        string               `json:"icon"`
-	Banner      string               `json:"banner"`
-	Region      string               `json:"region"`
-	ReleaseDate string               `json:"releaseDate"`
-	Version     string               `json:"version"`
-	Description string               `json:"description"`
-	Intro       string               `json:"intro"`
-	Publisher   string               `json:"publisher"`
-	InLibrary   bool                 `json:"inLibrary"`
-	Screenshots []string             `json:"screenshots"`
-	DLCs        []SwitchTitle        `json:"dlcs"`
-	Versions    []SwitchTitleVersion `json:"versions"`
-}
-
-type SwitchTitleVersion struct {
-	Version     int    `json:"version"`
-	ReleaseDate string `json:"releaseDate"`
-}
-
-type CatalogFiltersSortBy string
-
-type CatalogFilters struct {
-	SortBy storage.CatalogFiltersSortBy `json:"sortBy"`
-	Name   *string                      `json:"name"`
-	ID     *string                      `json:"id"`
-	Region []string                     `json:"region"`
-	Cursor int                          `json:"cursor"`
-	Limit  int                          `json:"limit"`
-}
-
-type CatalogPage struct {
-	Titles      []SwitchTitle `json:"titles"`
-	TotalTitles int           `json:"totalTitles"`
-	NextCursor  int           `json:"nextCursor"`
-	IsLastPage  bool          `json:"isLastPage"`
-}
-
-type OrganizeSettings struct {
-}
-
-type StartupProgressPayload struct {
-	Completed bool   `json:"completed"`
-	Running   bool   `json:"running"`
-	Message   string `json:"message"`
-	Current   int    `json:"current"`
-	Total     int    `json:"total"`
-}
-
-type EventMessage struct {
-	Type string `json:"type"`
-	Data any    `json:"data"`
-}
-
-type EventType string
-
-const (
-	EventTypeStartupProgress EventType = "startupProgress"
-)
-
 // App struct
 type App struct {
 	mutex              sync.Mutex
@@ -186,7 +124,7 @@ func (a *App) initializeSwitchDB() error {
 		a.sugarLogger.Infof("progress update: %v/%v %v", step, total, message)
 		eventMessage := EventMessage{
 			Type: string(EventTypeStartupProgress),
-			Data: StartupProgressPayload{
+			Data: EventStartupProgressPayload{
 				Completed: step == total,
 				Running:   step > 0 && step != total,
 				Message:   message,
@@ -216,7 +154,7 @@ func (a *App) RequestStartupProgress() {
 func (a *App) LoadCatalog(filters CatalogFilters) (CatalogPage, error) {
 	a.sugarLogger.Infof("load catalog request %v", filters)
 
-	var result []SwitchTitle
+	var result []CatalogSwitchGame
 	catalogFilters := &storage.CatalogFilters{
 		SortBy: filters.SortBy,
 		Name:   filters.Name,
@@ -229,64 +167,51 @@ func (a *App) LoadCatalog(filters CatalogFilters) (CatalogPage, error) {
 	}
 
 	for _, entry := range page.Data {
-		dlcs := make([]SwitchTitle, 0, len(entry.DLCs))
+		dlcs := make([]CatalogDLCData, 0, len(entry.DLCs))
 		for _, dlc := range entry.DLCs {
-			dlcs = append(dlcs, SwitchTitle{
+			dlcs = append(dlcs, CatalogDLCData{
 				Name:        dlc.Name,
 				TitleID:     dlc.ID,
-				Icon:        dlc.IconURL,
 				Banner:      dlc.BannerURL,
 				Region:      dlc.Region,
 				Version:     dlc.Version,
 				Description: dlc.Description,
-				Intro:       dlc.Intro,
-				Publisher:   dlc.Publisher,
-				ReleaseDate: dlc.ReleaseDate,
-				Screenshots: dlc.Screenshots,
-				// TODO: update
-				InLibrary: false,
 			})
 		}
 
-		versions := make([]SwitchTitleVersion, 0, len(entry.Versions))
+		versions := make([]CatalogVersionData, 0, len(entry.Versions))
 		for _, version := range entry.Versions {
-			versions = append(versions, SwitchTitleVersion{
+			versions = append(versions, CatalogVersionData{
 				Version:     version.Version,
 				ReleaseDate: version.ReleaseDate,
 			})
 		}
 
-		result = append(result, SwitchTitle{
-			Name:        entry.Name,
-			TitleID:     entry.ID,
-			Icon:        entry.IconURL,
-			Banner:      entry.BannerURL,
-			Region:      entry.Region,
-			Version:     entry.Version,
-			Description: entry.Description,
-			Intro:       entry.Intro,
-			ReleaseDate: entry.ReleaseDate,
-			Publisher:   entry.Publisher,
-			Screenshots: entry.Screenshots,
-			// TODO: update
-			InLibrary: false,
-
+		result = append(result, CatalogSwitchGame{
+			CatalogGameData: CatalogGameData{
+				Name:        entry.Name,
+				TitleID:     entry.ID,
+				Icon:        entry.IconURL,
+				Banner:      entry.BannerURL,
+				Region:      entry.Region,
+				Version:     entry.Version,
+				Description: entry.Description,
+				Intro:       entry.Intro,
+				ReleaseDate: entry.ReleaseDate,
+				Publisher:   entry.Publisher,
+				Screenshots: entry.Screenshots,
+			},
 			DLCs:     dlcs,
 			Versions: versions,
 		})
 	}
 	a.sugarLogger.Infof("loading catalog of %v items to frontend", len(result))
 	return CatalogPage{
-		Titles:      result,
-		TotalTitles: page.TotalCount,
-		NextCursor:  page.NextCursor,
-		IsLastPage:  page.IsLastPage,
+		Games:      result,
+		TotalGames: page.TotalCount,
+		NextCursor: page.NextCursor,
+		IsLastPage: page.IsLastPage,
 	}, nil
-}
-
-type LibraryFileEntry struct {
-	FilePath string `json:"filePath"`
-	FileSize int    `json:"fileSize"`
 }
 
 func (a *App) LoadLibraryFiles() ([]LibraryFileEntry, error) {
@@ -310,11 +235,149 @@ func (a *App) LoadLibraryFiles() ([]LibraryFileEntry, error) {
 	return res, nil
 }
 
-//type LibraryGameEntry struct {
-//	TitleID string
-//	Name string
-//
-//}
+func (a *App) LoadLibraryGames() ([]LibrarySwitchGame, error) {
+	fileEntries, err := a.libraryManager.GetEntries()
+	if err != nil {
+		return nil, fmt.Errorf("could not get file entries from library: %w", err)
+	}
+
+	// TODO: detect duplicates, still aggregate those but flag as duplicates, maybe even just put those in a list with versions?
+
+	// map by title prefix
+	titles := make(map[string]*LibrarySwitchGame)
+
+	for _, fileEntry := range fileEntries {
+		// base games
+		for _, game := range fileEntry.BaseGames {
+			title, ok := titles[game.IDPrefix]
+			if !ok {
+				title = &LibrarySwitchGame{
+					DLCs:    make(map[string]LibraryDLCData),
+					Updates: make(map[string]LibraryUpdateData),
+				}
+				titles[game.IDPrefix] = title
+			}
+			title.LibraryGameData.InLibrary = true
+			title.LibraryGameData.Files = append(title.LibraryGameData.Files, LibraryGameDataFile{
+				FileID:          fileEntry.FilePath,
+				FilePath:        fileEntry.FilePath,
+				ReadableVersion: game.ReadableVersion,
+				ExtractionType:  fileEntry.ExtractionType,
+			})
+		}
+
+		// dlcs
+		for _, dlc := range fileEntry.DLCs {
+			title, ok := titles[dlc.ForIDPrefix]
+			if !ok {
+				title = &LibrarySwitchGame{
+					DLCs:    make(map[string]LibraryDLCData),
+					Updates: make(map[string]LibraryUpdateData),
+				}
+				titles[dlc.ForIDPrefix] = title
+			}
+			titleDLC, ok := title.DLCs[dlc.ID]
+			if !ok {
+				titleDLC = LibraryDLCData{}
+			}
+
+			titleDLC.InLibrary = true
+			titleDLC.Files = append(titleDLC.Files, LibraryDLCDataFile{
+				FileID:         fileEntry.FilePath,
+				FilePath:       fileEntry.FilePath,
+				FileVersion:    dlc.Version,
+				ExtractionType: fileEntry.ExtractionType,
+			})
+			title.DLCs[dlc.ID] = titleDLC
+		}
+
+		//updates
+		for _, update := range fileEntry.Updates {
+			title, ok := titles[update.ForIDPrefix]
+			if !ok {
+				title = &LibrarySwitchGame{
+					DLCs:    make(map[string]LibraryDLCData),
+					Updates: make(map[string]LibraryUpdateData),
+				}
+				titles[update.ForIDPrefix] = title
+			}
+
+			titleUpdate, ok := title.Updates[update.ID]
+			if !ok {
+				titleUpdate = LibraryUpdateData{}
+			}
+			titleUpdate.Files = append(titleUpdate.Files, LibraryUpdateDataFile{
+				FileID:          fileEntry.FilePath,
+				FilePath:        fileEntry.FilePath,
+				FileVersion:     update.Version,
+				ReadableVersion: update.ReadableVersion,
+				ExtractionType:  fileEntry.ExtractionType,
+			})
+			title.Updates[update.ID] = titleUpdate
+		}
+	}
+
+	// fill catalog details
+
+	errs := make(map[string]error)
+	for idPrefix, title := range titles {
+		catalogData, err := a.fullDB.GetCatalogEntryByIDPrefix(idPrefix)
+		if err != nil {
+			errs[idPrefix] = err
+			continue
+		}
+		title.CatalogGameData = CatalogGameData{
+			Name:        catalogData.Name,
+			TitleID:     catalogData.ID,
+			Icon:        catalogData.IconURL,
+			Banner:      catalogData.BannerURL,
+			Region:      catalogData.Region,
+			ReleaseDate: catalogData.ReleaseDate,
+			Version:     catalogData.Version,
+			Description: catalogData.Description,
+			Intro:       catalogData.Intro,
+			Publisher:   catalogData.Publisher,
+			Screenshots: catalogData.Screenshots,
+		}
+
+		for _, dlc := range catalogData.DLCs {
+			catalogDLCData := CatalogDLCData{
+				Name:        dlc.Name,
+				TitleID:     dlc.ID,
+				Banner:      dlc.BannerURL,
+				Region:      dlc.Region,
+				Version:     dlc.Version,
+				Description: dlc.Description,
+			}
+
+			dlcEntry, ok := title.DLCs[dlc.ID]
+			if ok {
+				dlcEntry.CatalogDLCData = catalogDLCData
+			} else {
+				dlcEntry = LibraryDLCData{
+					CatalogDLCData: catalogDLCData,
+					InLibrary:      false,
+				}
+			}
+			title.DLCs[dlc.ID] = dlcEntry
+		}
+
+		// TODO: update versions
+		//title.AllVersions =
+		//title.IsRecentUpdateInLibrary =
+	}
+
+	// TODO: handle errors
+	if len(errs) > 0 {
+		return nil, fmt.Errorf("errors: %v", errs)
+	}
+
+	result := make([]LibrarySwitchGame, 0, len(titles))
+	for _, title := range titles {
+		result = append(result, *title)
+	}
+	return result, nil
+}
 
 //func (a *App) LoadLibraryGames() ([]data.LibraryFileEntry, error) {
 //	files, err :=  a.libraryManager.GetEntries()

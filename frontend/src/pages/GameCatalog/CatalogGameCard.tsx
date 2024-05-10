@@ -27,7 +27,7 @@ function LibraryIndicator({ inLibrary }: { inLibrary: boolean }) {
   );
 }
 
-function DLCCard({ data }: { data: main.SwitchTitle }) {
+function DLCCard({ data }: { data: main.CatalogDLCData }) {
   return (
     <div className={styles.dlcCard}>
       <img src={data.banner} className={styles.dlcBanner} />
@@ -37,13 +37,13 @@ function DLCCard({ data }: { data: main.SwitchTitle }) {
           {data.titleID}{" "}
           <span className={styles.additionalInfo}>({data.region})</span>
         </div>
-        <LibraryIndicator inLibrary={data.inLibrary}></LibraryIndicator>
+        <LibraryIndicator inLibrary={false}></LibraryIndicator>
       </div>
     </div>
   );
 }
 
-export function CatalogGameCard({ data }: { data: main.SwitchTitle }) {
+export function CatalogGameCard({ data }: { data: main.CatalogSwitchGame }) {
   const lastUpdate =
     data.versions.length > 0
       ? {
@@ -70,7 +70,7 @@ export function CatalogGameCard({ data }: { data: main.SwitchTitle }) {
                 ({lastUpdate.releaseDate})
               </span>
             </div>
-            <LibraryIndicator inLibrary={data.inLibrary}></LibraryIndicator>
+            <LibraryIndicator inLibrary={false}></LibraryIndicator>
           </div>
         </div>
         <div>{data.intro}</div>

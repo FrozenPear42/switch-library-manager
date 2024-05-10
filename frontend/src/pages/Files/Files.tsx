@@ -1,7 +1,8 @@
 import { useFiles } from "../../hooks/useFiles";
+import {useLibrary} from "../../hooks/useLibrary";
 
 export default function Files() {
-  const { data, isLoading, error } = useFiles();
+  const { data, isLoading, error } = useLibrary();
 
   return (
     <div>
