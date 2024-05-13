@@ -33,6 +33,11 @@ func (o *OrganizeOptions) SetDefaults() {
 	}
 }
 
+type NUTSettings struct {
+	Host string `yaml:"host" default:""`
+	Port int    `yaml:"port" default:"9000"`
+}
+
 type AppSettings struct {
 	Debug             bool            `yaml:"debug" default:"false"`
 	IgnoreDLCTitleIDs []string        `yaml:"ignoreDLCTitleIDs" default:"[\"test\"]"`
@@ -45,6 +50,7 @@ type AppSettings struct {
 	TitlesEndpoint    string          `yaml:"titlesEndpoint" default:"https://tinfoil.media/repo/db/titles.json"`
 	VersionsEndpoint  string          `yaml:"versionsEndpoint" default:"https://tinfoil.media/repo/db/versions.json"`
 	OrganizeOptions   OrganizeOptions `yaml:"organizeOptions"`
+	NUTSettings       NUTSettings     `yaml:"nut"`
 }
 
 func (o *AppSettings) SetDefaults() {

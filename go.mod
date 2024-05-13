@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/avast/retry-go v2.6.1+incompatible
 	github.com/creasty/defaults v1.7.0
+	github.com/go-chi/chi/v5 v5.0.12
 	github.com/google/uuid v1.4.0
 	github.com/hashicorp/go-version v1.6.0
 	github.com/magiconair/properties v1.8.7

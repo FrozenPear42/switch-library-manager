@@ -63,6 +63,7 @@ type LibraryGameFileMetadata struct {
 	DLCs           []SwitchFileDLC
 	Updates        []SwitchFileUpdate
 	ExtractionType ExtractionType
+	IsMultiContent bool
 }
 
 type ExtractionType string
@@ -85,6 +86,7 @@ type LibraryManager interface {
 	// Rescan performs a scan of library and reports back progress
 	Rescan(hardRescan bool, progressCallback ProgressCallback) error
 	GetEntries() ([]LibraryFileEntry, error)
+	GetFilesForID(id string) ([]LibraryFileEntry, error)
 	Clear() error
 }
 
@@ -270,8 +272,10 @@ func (l *LibraryManagerImpl) getGameMetadata(filePath, fileName, fileFormat stri
 		DLCs:           nil,
 		Updates:        nil,
 		ExtractionType: extractionType,
+		IsMultiContent: false,
 	}
 
+	entriesCount := 0
 	for _, entry := range metadata {
 		entryID := strings.ToUpper(entry.TitleId)
 		entryPrefix := entryID[:len(entryID)-4]
@@ -301,6 +305,7 @@ func (l *LibraryManagerImpl) getGameMetadata(filePath, fileName, fileFormat stri
 				ReadableVersion: readableVersion,
 				ISBN:            isbn,
 			})
+			entriesCount += 1
 		} else if strings.HasSuffix(entry.TitleId, "800") {
 			// update
 			var readableVersion string
@@ -314,7 +319,7 @@ func (l *LibraryManagerImpl) getGameMetadata(filePath, fileName, fileFormat stri
 				Version:         entry.Version,
 				ReadableVersion: readableVersion,
 			})
-
+			entriesCount += 1
 		} else {
 			// DLC
 			result.DLCs = append(result.DLCs, SwitchFileDLC{
@@ -322,6 +327,10 @@ func (l *LibraryManagerImpl) getGameMetadata(filePath, fileName, fileFormat stri
 				ID:          entryID,
 				Version:     entry.Version,
 			})
+			entriesCount += 1
+		}
+		if entriesCount > 1 {
+			result.IsMultiContent = true
 		}
 	}
 
@@ -334,4 +343,30 @@ func (l *LibraryManagerImpl) Clear() error {
 
 func (l *LibraryManagerImpl) GetEntries() ([]LibraryFileEntry, error) {
 	return l.entries, nil
+}
+
+func (l *LibraryManagerImpl) GetFilesForID(id string) ([]LibraryFileEntry, error) {
+	var result []LibraryFileEntry
+outer:
+	for _, entry := range l.entries {
+		for _, t := range entry.BaseGames {
+			if t.ID == id {
+				result = append(result, entry)
+				continue outer
+			}
+		}
+		for _, t := range entry.DLCs {
+			if t.ID == id {
+				result = append(result, entry)
+				continue outer
+			}
+		}
+		for _, t := range entry.Updates {
+			if t.ID == id {
+				result = append(result, entry)
+				continue outer
+			}
+		}
+	}
+	return result, nil
 }

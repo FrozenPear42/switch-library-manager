@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/FrozenPear42/switch-library-manager/data"
 	"github.com/FrozenPear42/switch-library-manager/keys"
+	"github.com/FrozenPear42/switch-library-manager/nut"
 	"github.com/FrozenPear42/switch-library-manager/settings"
 	"github.com/FrozenPear42/switch-library-manager/storage"
 	"github.com/FrozenPear42/switch-library-manager/utils"
@@ -15,6 +16,16 @@ import (
 	"sync"
 )
 
+type ServerReporter struct {
+	ctx    context.Context
+	logger *zap.SugaredLogger
+}
+
+func (s *ServerReporter) ReportProgress(filePath string, downloaded, total int64) {
+	s.logger.Infof("file download progress: %s %d/%d", filePath, downloaded, total)
+	//runtime.EventsEmit(s.ctx, )
+}
+
 // App struct
 type App struct {
 	mutex              sync.Mutex
@@ -23,6 +34,7 @@ type App struct {
 	fullDB             storage.SwitchDatabase
 	configProvider     settings.ConfigurationProvider
 	libraryManager     data.LibraryManager
+	nutServer          *nut.Server
 	recentStartupEvent EventMessage
 }
 
@@ -93,6 +105,12 @@ func (a *App) startup(ctx context.Context) {
 
 	libraryManager := data.NewLibraryManager(logger.Sugar(), keyProvider, config.ScanDirectories)
 
+	reporter := &ServerReporter{
+		ctx:    a.ctx,
+		logger: logger.Sugar(),
+	}
+	a.nutServer = nut.NewServer(config.NUTSettings.Host, config.NUTSettings.Port, libraryManager, reporter)
+
 	a.fullDB = database
 	a.configProvider = configurationProvider
 	a.sugarLogger = logger.Sugar()
@@ -119,6 +137,12 @@ func (a *App) startup(ctx context.Context) {
 	})
 	if err != nil {
 		sugar.Error("Failed to init scan files\n", err)
+		runtime.Quit(a.ctx)
+	}
+
+	err = a.nutServer.Listen()
+	if err != nil {
+		sugar.Error("Failed to start NUT server\n", err)
 		runtime.Quit(a.ctx)
 	}
 
