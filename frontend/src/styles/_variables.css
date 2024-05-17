@@ -1,4 +1,8 @@
 :root {
   --font-family-serif: sans-serif;
   --font-family-monospace: monospace;
+
+  --color-warning: rgb(255, 174, 0);
+  --color-success: rgb(148, 250, 15);
+  --color-error: rgb(245, 61, 15);
 }

@@ -10,10 +10,32 @@
   margin: 0;
 }
 
+/* ::-webkit-scrollbar {
+  background: red;
+}
+
+::-webkit-scrollbar-track {
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: aqua;
+
+  &:hover {
+  }
+}
+
+::-webkit-scrollbar-button {
+  color: white;
+  fill: white;
+  background-color: black;
+} */
+
 html {
   background-color: black;
   color: white;
   font-family: var(--font-family-serif);
+  scrollbar-color: #934bce #460c61;
+  scrollbar-width: thin;
 }
 
 main {

@@ -2,8 +2,10 @@
   background: #202020;
   color: white;
   border-bottom: 1px solid black;
-  display: flex;
-  padding: 0.25rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  padding: 0.5rem;
+  align-items: center;
 }
 
 .brand {
@@ -22,6 +24,10 @@
 }
 
 .brandIcon {
+  height: 40px;
+  /* aspect-ratio: 1; */
+  object-fit: contain;
+  align-self: flex-start;
 }
 
 .stats {

@@ -140,11 +140,13 @@ func (a *App) startup(ctx context.Context) {
 		runtime.Quit(a.ctx)
 	}
 
-	err = a.nutServer.Listen()
-	if err != nil {
-		sugar.Error("Failed to start NUT server\n", err)
-		runtime.Quit(a.ctx)
-	}
+	go func() {
+		err = a.nutServer.Listen()
+		if err != nil {
+			sugar.Error("Failed to start NUT server\n", err)
+			runtime.Quit(a.ctx)
+		}
+	}()
 
 	a.sugarLogger.Infof("initialized")
 }
@@ -268,6 +270,8 @@ func (a *App) LoadLibraryFiles() ([]LibraryFileEntry, error) {
 func (a *App) LoadLibraryGames() ([]LibrarySwitchGame, error) {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
+
+	a.sugarLogger.Debugf("request: LoadLibraryGames")
 
 	fileEntries, err := a.libraryManager.GetEntries()
 	if err != nil {
@@ -409,6 +413,9 @@ func (a *App) LoadLibraryGames() ([]LibrarySwitchGame, error) {
 	for _, title := range titles {
 		result = append(result, *title)
 	}
+
+	a.sugarLogger.Debugf("request result: LoadLibraryGames: %v", len(result))
+
 	return result, nil
 }
 

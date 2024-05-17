@@ -7,8 +7,16 @@ import Menu from "./components/Menu/Menu";
 import Catalog from "./pages/GameCatalog/Catalog";
 import Library from "./pages/Library/Library";
 import Files from "./pages/Files/Files";
+import { useStartup } from "./hooks/useStartup";
+import NUTPage from "./pages/NUTPage/NUTPage";
 
 export default function App() {
+  const { state } = useStartup();
+
+  if (state?.running) {
+    return <LoadingPanel state={state}></LoadingPanel>;
+  }
+
   return (
     <div className={styles.app}>
       <div className={styles.header}>
@@ -28,7 +36,9 @@ export default function App() {
           <Route path="/files">
             <Files />
           </Route>
-          <Route path="/nut">NUT</Route>
+          <Route path="/nut">
+            <NUTPage />
+          </Route>
           <Route path="/settings">Settings</Route>
           <Route>
             <Redirect to="/library"></Redirect>
@@ -40,6 +50,4 @@ export default function App() {
       </div>
     </div>
   );
-
-  // return <LoadingPanel></LoadingPanel>;
 }

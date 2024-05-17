@@ -1,8 +1,32 @@
+.page {
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  gap: 1rem;
+}
+
+.loadingError {
+  color: var(--color-error);
+  display: grid;
+  place-items: center;
+  gap: 0.25rem;
+}
+
 .actions {
   display: flex;
+  justify-content: start;
+  align-items: flex-start;
+  width: 100%;
+  margin-block: 0.5rem;
 }
 
 .gameGrid {
   display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }

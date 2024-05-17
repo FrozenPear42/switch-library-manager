@@ -3,6 +3,7 @@ import { main } from "../../../wailsjs/go/models";
 import styles from "./CatalogGameCard.module.css";
 import classNames from "classnames";
 import Collapsible from "../../components/Collapsible/Collapsible";
+import { Card } from "../../components/Card/Card";
 
 function LibraryIndicator({ inLibrary }: { inLibrary: boolean }) {
   return (
@@ -53,8 +54,7 @@ export function CatalogGameCard({ data }: { data: main.CatalogSwitchGame }) {
       : { releaseDate: data.releaseDate, version: data.version };
 
   return (
-    <div className={styles.card}>
-      <img src={data.banner} className={styles.backgroundBanner} />
+    <Card coverImage={data.banner} className={styles.card}>
       <div className={styles.content}>
         <div className={styles.header}>
           <img src={data.icon} className={styles.gameIcon} />
@@ -99,6 +99,6 @@ export function CatalogGameCard({ data }: { data: main.CatalogSwitchGame }) {
           </>
         )}
       </div>
-    </div>
+    </Card>
   );
 }

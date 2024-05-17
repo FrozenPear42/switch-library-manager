@@ -19,7 +19,7 @@
 
   background-color: var(--background-color);
   display: grid;
-  grid-template-areas: "header header" "sidemenu content" "footer footer";
+  grid-template-areas: "header header" "sidemenu content" "sidemenu footer";
   grid-template-rows: auto 1fr auto;
   grid-template-columns: auto 1fr;
   gap: 0;
@@ -36,7 +36,7 @@
 .content {
   grid-area: content;
   padding: 1rem;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .footer {

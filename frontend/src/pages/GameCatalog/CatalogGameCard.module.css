@@ -1,28 +1,7 @@
 .card {
-  border-radius: 0.5rem;
-  backdrop-filter: blur(5px);
-  background: linear-gradient(180deg, #aaaaaa40, #aaaaaa20);
-  box-shadow: 0 0 10px 2px #00000030;
-  border: 1px solid #ff86f540;
-  overflow: hidden;
-  position: relative;
-}
-
-.backgroundBanner {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  /* object-position: 100% 100%; */
-  mask-image: linear-gradient(180deg, white, transparent);
-  opacity: 0.25;
-  position: absolute;
-  z-index: -1;
-}
-
-.content {
-  padding: 0.75rem;
   display: grid;
   gap: 1rem;
+  padding: 0.75rem;
 }
 
 .header {
