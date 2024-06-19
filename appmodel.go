@@ -111,7 +111,7 @@ type LibrarySwitchGame struct {
 	DLCs                    map[string]LibraryDLCData    `json:"dlcs"`
 	Updates                 map[string]LibraryUpdateData `json:"updates"`
 	AllVersions             []CatalogVersionData         `json:"allVersions"`
-	IsRecentUpdateInLibrary bool                         `json:"isNewestRecentInLibrary"`
+	IsRecentUpdateInLibrary bool                         `json:"isRecentUpdateInLibrary"`
 }
 
 // Events

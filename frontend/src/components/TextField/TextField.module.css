@@ -1,0 +1,26 @@
+.label {
+  font-size: 0.85rem;
+  padding-left: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.textField {
+  display: flex;
+  flex-direction: column;
+  /* width: fit-content; */
+}
+
+.input {
+  padding: 0.286rem;
+  margin: 0;
+  border: 1px solid black;
+  border-radius: 6px;
+  background: #18001f;
+  font-size: 1rem;
+  color: white;
+
+  &[data-focused] {
+    outline: 2px solid #ffffff20;
+    outline-offset: -1px;
+  }
+}

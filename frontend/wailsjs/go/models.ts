@@ -314,7 +314,7 @@ export namespace main {
 	    dlcs: {[key: string]: LibraryDLCData};
 	    updates: {[key: string]: LibraryUpdateData};
 	    allVersions: CatalogVersionData[];
-	    isNewestRecentInLibrary: boolean;
+	    isRecentUpdateInLibrary: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new LibrarySwitchGame(source);
@@ -338,7 +338,7 @@ export namespace main {
 	        this.dlcs = this.convertValues(source["dlcs"], LibraryDLCData, true);
 	        this.updates = this.convertValues(source["updates"], LibraryUpdateData, true);
 	        this.allVersions = this.convertValues(source["allVersions"], CatalogVersionData);
-	        this.isNewestRecentInLibrary = source["isNewestRecentInLibrary"];
+	        this.isRecentUpdateInLibrary = source["isRecentUpdateInLibrary"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

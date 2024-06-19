@@ -158,7 +158,7 @@ func parseCatalogFiles(titlesFile, versionsFile io.Reader) (map[string]storage.C
 		// Updates    ends with 800
 		// Dlc        a running counter (starting with 001) in the 4 last chars
 
-		mainTitleId := id[:len(id)-4] + "xxxx"
+		mainTitleId := id[:len(id)-4]
 
 		if _, ok := entries[mainTitleId]; !ok {
 			entries[mainTitleId] = storage.CatalogEntry{}
@@ -184,7 +184,7 @@ func parseCatalogFiles(titlesFile, versionsFile io.Reader) (map[string]storage.C
 				Screenshots: data.Screenshots,
 			}
 			var vs []storage.CatalogEntryVersion
-			for versionNumberStr, releaseDate := range versionsData[id[:len(id)-3]+"000"] {
+			for versionNumberStr, releaseDate := range versionsData[strings.ToLower(id)] {
 				versionNumber, err := strconv.Atoi(versionNumberStr)
 				if err != nil {
 					continue

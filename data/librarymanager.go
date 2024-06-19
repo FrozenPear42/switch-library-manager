@@ -131,6 +131,7 @@ func (l *LibraryManagerImpl) Rescan(hardRescan bool, progressCallback ProgressCa
 	}
 	// TODO: handle errors
 
+	errs = make(map[string]error)
 	fileEntries := make([]LibraryFileEntry, 0, len(files))
 	for idx, file := range files {
 		if progressCallback != nil {
@@ -140,8 +141,12 @@ func (l *LibraryManagerImpl) Rescan(hardRescan bool, progressCallback ProgressCa
 		fileEntry, err := l.processFile(file)
 		if err != nil {
 			errs[file.FullPath] = err
+			continue
 		}
 		fileEntries = append(fileEntries, *fileEntry)
+	}
+	if len(errs) > 0 {
+		l.logger.Warnf("errors: %v", errs)
 	}
 
 	//TODO:  store to DB instead

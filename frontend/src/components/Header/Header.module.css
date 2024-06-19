@@ -6,6 +6,8 @@
   grid-template-columns: 1fr auto;
   padding: 0.5rem;
   align-items: center;
+
+  user-select: none;
 }
 
 .brand {

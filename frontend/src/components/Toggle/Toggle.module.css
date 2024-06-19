@@ -1,0 +1,51 @@
+.switch {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: center;
+
+  /* font-size: 1.143rem; */
+  forced-color-adjust: none;
+
+  .indicator {
+    width: 2rem;
+    height: 1rem;
+    border: 2px solid rgb(137, 31, 146);
+    background: rgb(51, 48, 66);
+    border-radius: 1.143rem;
+    transition: all 200ms;
+
+    &:before {
+      content: "";
+      display: block;
+      width: 0.5rem;
+      height: 0.5rem;
+      margin-left: 0.125rem;
+      margin-top: 0.125rem;
+
+      background: rgb(112, 112, 112);
+      border-radius: 10rem;
+      transition: all 200ms;
+    }
+  }
+
+  &[data-pressed] .indicator {
+    border-color: rgb(212, 0, 255);
+
+    &:before {
+      background: rgb(255, 255, 255);
+    }
+  }
+
+  &[data-selected] {
+    .indicator {
+      border-color: rgb(137, 31, 146);
+      background: rgb(150, 40, 194);
+
+      &:before {
+        background: pink;
+        transform: translateX(200%);
+      }
+    }
+  }
+}

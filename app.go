@@ -12,6 +12,7 @@ import (
 	"github.com/FrozenPear42/switch-library-manager/utils"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 	"path/filepath"
 	"sync"
 )
@@ -399,9 +400,29 @@ func (a *App) LoadLibraryGames() ([]LibrarySwitchGame, error) {
 			title.DLCs[dlc.ID] = dlcEntry
 		}
 
-		// TODO: update versions
-		//title.AllVersions =
-		//title.IsRecentUpdateInLibrary =
+		title.AllVersions = []CatalogVersionData{}
+		latestVersion := 0
+		zap.S().Debugf("versions: %v", catalogData.Versions)
+		for _, v := range catalogData.Versions {
+			title.AllVersions = append(title.AllVersions, CatalogVersionData{
+				Version:     v.Version,
+				ReleaseDate: v.ReleaseDate,
+			})
+			if v.Version > latestVersion {
+				latestVersion = v.Version
+			}
+		}
+
+		isRecentUpdateInLibrary := false
+		for _, u := range title.Updates {
+			isRecentUpdateInLibrary = slices.ContainsFunc(u.Files, func(file LibraryUpdateDataFile) bool {
+				return file.FileVersion == latestVersion
+			})
+			if isRecentUpdateInLibrary {
+				break
+			}
+		}
+		title.IsRecentUpdateInLibrary = isRecentUpdateInLibrary
 	}
 
 	// TODO: handle errors

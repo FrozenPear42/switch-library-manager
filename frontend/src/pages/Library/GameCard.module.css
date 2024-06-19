@@ -1,16 +1,10 @@
 .card {
   padding: 0.5rem;
   display: grid;
-
   /* gap: 0.25rem 1rem; */
   /* flex-wrap: wrap; */
   /* max-width: 500px; */
-}
-
-.details {
-  display: grid;
-  align-content: start;
-  gap: 0.25rem;
+  text-shadow: 1px 2px black;
 }
 
 .additionalInfo {
@@ -25,11 +19,48 @@
 
 .icon {
   border-radius: 0.5rem;
-  border: 1px solid #ffffff80;
+  border: 1px solid #ffffff40;
   width: 135px;
+  box-shadow: 0 0 10px 5px #00000060;
 }
 
 .title {
-  font-size: 1.05rem;
-  font-weight: bold;
+  font-size: 1.2rem;
+  text-shadow: 1px 2px black;
+}
+
+.details {
+  margin-block: 0.5rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 1ch;
+}
+
+.updateInfo {
+  display: grid;
+}
+
+.versionTag {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+  /* margin-inline: 0.25rem; */
+}
+
+.detailsLine {
+  display: inline-flex;
+  gap: 0.5ch;
+  align-items: center;
+}
+
+.colorSuccess {
+  color: var(--color-success);
+}
+
+.colorWarning {
+  color: var(--color-warning);
+}
+
+.colorError {
+  color: var(--color-error);
 }

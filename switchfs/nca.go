@@ -102,7 +102,7 @@ func decryptAesCtr(keyProvider keys.KeysProvider, ncaHeader *ncaHeader, fsHeader
 		return []byte{}, errors.New("unsupported crypto type")
 	}
 
-	keyName := fmt.Sprintf("key_area_key_application_0%x", keyRevision)
+	keyName := fmt.Sprintf("key_area_key_application_%02x", keyRevision)
 	KeyString, ok := keyProvider.GetProdKey(keyName)
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("missing Key_area_key[%v]", keyName))
